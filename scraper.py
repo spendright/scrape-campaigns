@@ -69,6 +69,13 @@ def init_tables():
         '    category TEXT,'
         '    PRIMARY KEY (campaign_id, company, brand, category))')
 
+    # factual information about a company (e.g. url, email, etc.)
+    scraperwiki.sql.execute(
+        'CREATE TABLE IF NOT EXISTS campaign_company ('
+        '    campaign_id TEXT,'
+        '    company TEXT,'
+        '    PRIMARY KEY (campaign_id, company))')
+
     # factual information about which categories a company belongs to;
     # usually less specific
     scraperwiki.sql.execute(
@@ -138,6 +145,12 @@ def save_campaign(campaign, record):
 def save_rating(campaign, rating):
     rating = rating.copy()
 
+    # if company is a dict, save it separately
+    if 'company' in rating and isinstance(rating['company'], dict):
+        company = rating['company']
+        save_company(company)
+        rating['company'] = company['company']
+
     for key in 'company', 'brand', 'scope':
         if key not in rating:
             rating[key] = ''
@@ -174,6 +187,18 @@ def save_brand(campaign, brand):
         ['campaign_id', 'company', 'brand'],
         dict(campaign_id=campaign, **brand),
         table_name='campaign_brand')
+
+
+def save_company(campaign, company):
+    if 'brands' in company:
+        company = company.copy()
+        for brand in company.pop('brands'):
+            save_brand(campaign, dict(brand=brand, company=company['company']))
+
+    scraperwiki.sql.save(
+        ['campaign_id', 'company'],
+        dict(campaign_id=campaign, **company),
+        table_name='campaign_company')
 
 
 def save_brand_category(campaign, brand_category):

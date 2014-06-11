@@ -3,7 +3,6 @@ import json
 import os
 import scraperwiki
 import re
-import sys
 from bs4 import BeautifulSoup
 
 API_TOKEN = '7baaa18a777fc27287ad5898750cfe09'
@@ -22,7 +21,7 @@ RATINGS_URL = 'http://widgets.free2work.org/frontend_ratings/public_view/'
 
 # http://widgets.free2work.org/frontend_ratings/public_view/1095
 # is a duplicate of 1046, and mis-spells the name, (should be "KMart",
-# not "K-Mart"
+# not "K-Mart")
 DUPLICATE_RATINGS = [1095]
 
 JSON_CALLBACK_RE = re.compile('jsonCallback\((.*)\)')
