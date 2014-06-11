@@ -90,7 +90,7 @@ def scrape_campaign():
 
         cat_name = start['categories'][cat_id]
         print u'Cat {:d}: {} ({:d} of {:d})'.format(
-            cat_id, cat_name, i + 1, len(cat_ids)).encode('utf-8')
+            cat_id, cat_name, i + 1, len(all_cat_ids)).encode('utf-8')
         for record in scrape_category(cat_id):
             yield record
 
