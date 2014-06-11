@@ -57,7 +57,7 @@ def scrape_campaign():
     yield 'campaign', start['campaign']
 
     if 'MORPH_HRC_ORG_IDS' in environ:
-        org_ids = environ['MORPH_HRC_ORG_IDS'].split(',')
+        org_ids = map(int, environ['MORPH_HRC_ORG_IDS'].split(','))
     else:
         org_ids = sorted(start['orgs'])
 
@@ -113,9 +113,11 @@ def scrape_company_profile(org_id):
     rating['score'] = int(company_h2.span.text.split()[-1])
     rating['judgment'] = STYLE_TO_JUDGMENT[company_h2.span['style']]
 
-    url_a = rating_section.find('strong', text='Website:').findNextSibling()
-    if url_a.name == 'a':
-        company['url'] = fix_url(url_a['href'])
+    website_label = rating_section.find('strong', text='Website:')
+    if website_label:  # sometimes missing, like on Invesco (1109)
+        url_a = website_label.findNextSibling()
+        if url_a.name == 'a':
+            company['url'] = fix_url(url_a['href'])
 
     # feedback section
     feedback_section = sections[2]

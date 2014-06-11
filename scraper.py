@@ -148,7 +148,7 @@ def save_rating(campaign, rating):
     # if company is a dict, save it separately
     if 'company' in rating and isinstance(rating['company'], dict):
         company = rating['company']
-        save_company(company)
+        save_company(campaign, company)
         rating['company'] = company['company']
 
     for key in 'company', 'brand', 'scope':
