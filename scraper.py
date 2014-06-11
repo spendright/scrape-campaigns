@@ -142,9 +142,6 @@ def save_rating(campaign, rating):
         if key not in rating:
             rating[key] = ''
 
-    if not rating['company']:
-        raise NotImplementedError('must set company')
-
     if 'target_type' not in rating:
         rating['target_type'] = 'brand' if rating['brand'] else 'company'
 
