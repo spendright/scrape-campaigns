@@ -92,6 +92,7 @@ def scrape_campaign():
         print u'Cat {:d}: {} ({:d} of {:d})'.format(
             cat_id, cat_name, i + 1, len(all_cat_ids)).encode('utf-8')
         for record in scrape_category(cat_id):
+            print repr(record)
             yield record
 
     # scrape company pages (if requested to)
@@ -189,8 +190,17 @@ def scrape_company_profile(org_id):
 
 def scrape_category(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
-    soup = BeautifulSoup(scraperwiki.scrape(url))
+    print 'Fetching {}'.format(url)
+    data = scraperwiki.scrape(url)
 
+    import time
+    time.sleep(5)
+
+    print 'Converting to soup'
+    soup = BeautifulSoup(data)
+    time.sleep(5)
+
+    print 'Parsing'
     div = soup.select('div.legislation-box')[1]
 
     category = div.h2.text.strip()
