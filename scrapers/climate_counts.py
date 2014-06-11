@@ -78,7 +78,7 @@ def scrape_campaign():
         sector = c['Sector']
         rating['categories'] = [SECTOR_CORRECTIONS.get(sector) or c['Sector']]
 
-        if not (c.get('Scores') and c['Scores'].get('Scores')):
+        if c.get('Scores') and c['Scores'].get('Scores'):
             scores = c['Scores']['Scores'][-1]
 
             rating['score'] = scores['Total']
