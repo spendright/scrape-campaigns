@@ -89,6 +89,13 @@ TABLE_TO_EXTRA_FIELDS = {
 }
 
 
+def merge(src, dst):
+    """Merge src dictionary into dst."""
+    for k, v in src.iteritems():
+        if v is not None and (v != '' or not dst.get(k)):
+            dst[k] = v
+
+
 def init_tables():
     for table, key_fields in sorted(TABLE_TO_KEY_FIELDS.items()):
         key_fields = ['campaign_id'] + key_fields
@@ -112,7 +119,7 @@ def clear_campaign(campaign):
 
 
 def save_records(campaign, records):
-    table_to_key_to_rows = defaultdict(lambda: defaultdict(list))
+    table_to_key_to_row = defaultdict(dict)
 
     def handle(record_type, record):
         """handle a record from a scraper, which main contain/imply
@@ -165,7 +172,8 @@ def save_records(campaign, records):
         store(record_type, record)
 
     def store(record_type, record):
-        """store an upacked record in table_to_key_to_rows."""
+        """store an upacked record in table_to_key_to_row, possibly
+        merging it with a previous record."""
         table = ('campaign' if record_type == 'campaign'
                  else 'campaign_' + record_type)
         key_fields = TABLE_TO_KEY_FIELDS[table]
@@ -175,35 +183,22 @@ def save_records(campaign, records):
                 record[k] = ''
         key = tuple(record[k] for k in key_fields)
 
-        table_to_key_to_rows[table][key].append(record)
-
-    def merge(records):
-        """Merge dictionaries for the same record."""
-        result = {}
-
-        for record in records:
-            for k, v in record.iteritems():
-                if v is not None and (v != '' or not result.get(k)):
-                    result[k] = v
-
-        return result
+        if key in table_to_key_to_row[table]:
+            merge(record, table_to_key_to_row[table][key])
+        else:
+            table_to_key_to_row[table][key] = record
 
     for record_type, record in records:
         handle(record_type, record)
 
-    for table in table_to_key_to_rows:
+    for table in table_to_key_to_row:
         key_fields = TABLE_TO_KEY_FIELDS[table]
 
-        for key, rows in table_to_key_to_rows[table].iteritems():
-            row = merge(rows)
-            try:
-                scraperwiki.sql.save(
-                    ['campaign_id'] + key_fields,
-                    dict(campaign_id=campaign, **row),
-                    table_name=table)
-            except:
-                import pdb; pdb.set_trace()
-                True
+        for key, row in table_to_key_to_row[table].iteritems():
+            scraperwiki.sql.save(
+                ['campaign_id'] + key_fields,
+                dict(campaign_id=campaign, **row),
+                table_name=table)
 
 
 def get_scraper_names():
