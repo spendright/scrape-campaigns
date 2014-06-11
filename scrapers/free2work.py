@@ -36,7 +36,9 @@ CAMPAIGN = {
     'contributors': 'International Labor Rights Forum, Baptist World Aid',
     'copyright': u'©2010-2014 NOT FOR SALE',
     'author_url': 'http://www.notforsalecampaign.org/',
-    'donate_url': 'https://nfs.webconnex.com/free2work',
+    # donation form for Free2Work is non-functional so donate to NFS
+    #'donate_url': 'https://nfs.webconnex.com/free2work',
+    'donate_url': 'http://www.notforsalecampaign.org/donate/',
     'twitter_handle': '@F2W',
     'facebook_url': 'http://www.facebook.com/Free2Work',
     'email': 'feedback@free2work.org',
