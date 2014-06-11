@@ -70,15 +70,17 @@ def scrape_campaign():
         cat_ids = sorted(start['categories'])
         org_ids = sorted(start['orgs'])
 
-    for cat_id in cat_ids:
+    for i, cat_id in enumerate(cat_ids):
         cat_name = start['categories'][cat_id]
-        print u'Cat {:d}: {}'.format(cat_id, cat_name).encode('utf-8')
+        print u'Cat {:d}: {} ({:d} of {:d})'.format(
+            cat_id, cat_name, i + 1, len(cat_ids)).encode('utf-8')
         for record in scrape_category(cat_id):
             yield record
 
-    for org_id in org_ids:
+    for i, org_id in enumerate(org_ids):
         org_name = start['orgs'][org_id]
-        print u'Org {:d}: {}'.format(org_id, org_name).encode('utf-8')
+        print u'Org {:d}: {} ({:d} of {:d})'.format(
+            org_id, org_name, i + 1, len(org_ids)).encode('utf-8')
         for record in scrape_company_profile(org_id):
             yield record
 
