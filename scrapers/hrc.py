@@ -1,4 +1,6 @@
 from os import environ
+from os.path import basename
+from urlparse import urljoin
 
 import scraperwiki
 from bs4 import BeautifulSoup
@@ -40,6 +42,13 @@ STYLE_TO_JUDGMENT = {
 }
 
 
+IMG_TO_JUDGMENT = {
+    'green.jpg': 1,
+    'yellow.jpg': 0,
+    'red.jpg': -1,
+}
+
+
 def fix_url(url):
     if '://' not in url:
         return 'http://' + url
@@ -57,19 +66,18 @@ def scrape_campaign():
     yield 'campaign', start['campaign']
 
     # manually set cat/org IDs from environment
-    cat_ids = []
+    cat_ids = sorted(start['categories'])
     if 'MORPH_HRC_CAT_IDS' in environ:
         cat_ids = map(int, environ['MORPH_HRC_CAT_IDS'].split(','))
 
+    # by default, don't scrape org pages because there are so many
     org_ids = []
     if 'MORPH_HRC_ORG_IDS' in environ:
         org_ids = map(int, environ['MORPH_HRC_ORG_IDS'].split(','))
-
-    # the default
-    if not (cat_ids or org_ids):
-        cat_ids = sorted(start['categories'])
+    elif environ.get('MORPH_HRC_SCRAPE_ORGS'):
         org_ids = sorted(start['orgs'])
 
+    # scrape category pages
     for i, cat_id in enumerate(cat_ids):
         cat_name = start['categories'][cat_id]
         print u'Cat {:d}: {} ({:d} of {:d})'.format(
@@ -77,6 +85,7 @@ def scrape_campaign():
         for record in scrape_category(cat_id):
             yield record
 
+    # scrape company pages (if requested to)
     for i, org_id in enumerate(org_ids):
         org_name = start['orgs'][org_id]
         print u'Org {:d}: {} ({:d} of {:d})'.format(
@@ -170,9 +179,6 @@ def scrape_company_profile(org_id):
 
 
 def scrape_category(cat_id):
-    # currently only using this for brand category information
-    # companies can have brands in multiple categories, so scraping
-    # them from the brand page could get complicated
     url = RANKING_URL_FMT.format(cat_id)
     soup = BeautifulSoup(scraperwiki.scrape(url))
 
@@ -181,12 +187,34 @@ def scrape_category(cat_id):
     category = div.h2.text.strip()
 
     for tr in div.select('tr')[1:]:  # skip header
-        strings = list(tr.td.stripped_strings)
-        company = strings[0]
+        tds = tr.select('td')
 
+        # extract rating info
+        rating = {}
+        a = tds[0].a
+        rating['company'] = a.text.strip()
+        rating['url'] = urljoin(url, a['href'])
+        # remove useless catid param
+        if '&catid=' in rating['url']:
+            rating['url'] = rating['url'][:rating['url'].index('&catid=')]
+
+        # OSI Restaurant Partners is unrated
+        score = tds[2].text.strip()
+        if score:
+            rating['score'] = int(score)
+            rating['min_score'] = MIN_SCORE
+            rating['max_score'] = MAX_SCORE
+
+            img = tds[1].img
+            rating['judgment'] = IMG_TO_JUDGMENT[basename(img['src'])]
+
+        yield 'rating', rating
+
+        # extract brands
+        strings = list(tds[0].stripped_strings)
         # brands are followed by ";"
         for i, s in enumerate(strings):
             if s == ';':
                 brand = strings[i - 1]
                 yield 'brand_category', dict(
-                    company=company, brand=brand, category=category)
+                    company=rating['company'], brand=brand, category=category)

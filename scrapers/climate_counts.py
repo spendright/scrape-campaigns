@@ -72,7 +72,7 @@ def scrape_campaign():
             rating['brands'] = c['Brands']
 
         # sadly, the IDs on the website don't match the IDs for the API
-        # TODO: scrape the website
+        # TODO: scrape the website?
         # rating['url'] = DETAILS_URL_PATTERN.format(c['CompanyID'])
 
         sector = c['Sector']
