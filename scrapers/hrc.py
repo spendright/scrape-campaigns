@@ -66,9 +66,15 @@ def scrape_campaign():
     yield 'campaign', start['campaign']
 
     # manually set cat/org IDs from environment
-    cat_ids = sorted(start['categories'])
+    all_cat_ids = sorted(start['categories'])
+
+    cat_ids = []
     if 'MORPH_HRC_CAT_IDS' in environ:
         cat_ids = map(int, environ['MORPH_HRC_CAT_IDS'].split(','))
+
+    skip_cat_ids = []
+    if 'MORPH_HRC_SKIP_CAT_IDS' in environ:
+        skip_cat_ids = map(int, environ['MORPH_HRC_SKIP_CAT_IDS'].split(','))
 
     # by default, don't scrape org pages because there are so many
     org_ids = []
@@ -78,7 +84,10 @@ def scrape_campaign():
         org_ids = sorted(start['orgs'])
 
     # scrape category pages
-    for i, cat_id in enumerate(cat_ids):
+    for i, cat_id in enumerate(all_cat_ids):
+        if cat_id in skip_cat_ids or (cat_ids and cat_id not in cat_ids):
+            continue
+
         cat_name = start['categories'][cat_id]
         print u'Cat {:d}: {} ({:d} of {:d})'.format(
             cat_id, cat_name, i + 1, len(cat_ids)).encode('utf-8')
