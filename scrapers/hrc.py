@@ -180,7 +180,7 @@ def scrape_company_profile(org_id):
 
 def scrape_category(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
-    soup = BeautifulSoup(scraperwiki.scrape(url))
+    soup = BeautifulSoup(scraperwiki.scrape(url), from_encoding='utf-8')
 
     div = soup.select('div.legislation-box')[1]
 
