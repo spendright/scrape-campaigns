@@ -61,12 +61,12 @@ def list_to_dict(a):
 
 
 def scrape_campaign():
-    print 'Start page'
-    start = scrape_start_page()
-    yield 'campaign', start['campaign']
+    print 'Landing page'
+    landing = scrape_landing_page()
+    yield 'campaign', landing['campaign']
 
     # manually set cat/org IDs from environment
-    all_cat_ids = sorted(start['categories'])
+    all_cat_ids = sorted(landing['categories'])
 
     cat_ids = []
     if 'MORPH_HRC_CAT_IDS' in environ:
@@ -81,14 +81,14 @@ def scrape_campaign():
     if 'MORPH_HRC_ORG_IDS' in environ:
         org_ids = map(int, environ['MORPH_HRC_ORG_IDS'].split(','))
     elif environ.get('MORPH_HRC_SCRAPE_ORGS'):
-        org_ids = sorted(start['orgs'])
+        org_ids = sorted(landing['orgs'])
 
     # scrape category pages
     for i, cat_id in enumerate(all_cat_ids):
         if cat_id in skip_cat_ids or (cat_ids and cat_id not in cat_ids):
             continue
 
-        cat_name = start['categories'][cat_id]
+        cat_name = landing['categories'][cat_id]
         print u'Cat {:d}: {} ({:d} of {:d})'.format(
             cat_id, cat_name, i + 1, len(all_cat_ids)).encode('utf-8')
         for record in scrape_category(cat_id):
@@ -97,7 +97,7 @@ def scrape_campaign():
 
     # scrape company pages (if requested to)
     for i, org_id in enumerate(org_ids):
-        org_name = start['orgs'][org_id]
+        org_name = landing['orgs'][org_id]
         print u'Org {:d}: {} ({:d} of {:d})'.format(
             org_id, org_name, i + 1, len(org_ids)).encode('utf-8')
         for record in scrape_company_profile(org_id):
@@ -112,7 +112,7 @@ def options_to_dict(options):
     }
 
 
-def scrape_start_page():
+def scrape_landing_page():
     d = {}
     d['campaign'] = CAMPAIGN
 
@@ -190,17 +190,10 @@ def scrape_company_profile(org_id):
 
 def scrape_category(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
-    print 'Fetching {}'.format(url)
     data = scraperwiki.scrape(url)
-
-    import time
-    time.sleep(60)
-
-    print 'Converting to soup'
+    # runs out of memory on morph.io (killed by some supervisor process)
+    # parsing http://www.hrc.org/apps/buyersguide/ranking.php?category=1223
     soup = BeautifulSoup(data)
-    time.sleep(60)
-
-    print 'Parsing'
     div = soup.select('div.legislation-box')[1]
 
     category = div.h2.text.strip()
