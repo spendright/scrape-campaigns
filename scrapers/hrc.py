@@ -56,20 +56,24 @@ def scrape_campaign():
     start = scrape_start_page()
     yield 'campaign', start['campaign']
 
+    # manually set cat/org IDs from environment
+    cat_ids = []
     if 'MORPH_HRC_CAT_IDS' in environ:
         cat_ids = map(int, environ['MORPH_HRC_CAT_IDS'].split(','))
-    else:
-        cat_ids = sorted(start['categories'])
 
+    org_ids = []
     if 'MORPH_HRC_ORG_IDS' in environ:
         org_ids = map(int, environ['MORPH_HRC_ORG_IDS'].split(','))
-    else:
+
+    # the default
+    if not (cat_ids or org_ids):
+        cat_ids = sorted(start['categories'])
         org_ids = sorted(start['orgs'])
 
     for cat_id in cat_ids:
         cat_name = start['categories'][cat_id]
         print u'Cat {:d}: {}'.format(cat_id, cat_name).encode('utf-8')
-        for record in scrape_company_profile(cat_id):
+        for record in scrape_category(cat_id):
             yield record
 
     for org_id in org_ids:
@@ -120,8 +124,10 @@ def scrape_company_profile(org_id):
         raise ValueError('company section not found')
 
     company['company'] = company_h2.text[:company_h2.text.index('[')].strip()
-    rating['score'] = int(company_h2.span.text.split()[-1])
-    rating['judgment'] = STYLE_TO_JUDGMENT[company_h2.span['style']]
+    score = company_h2.span.text.split()[-1]
+    if score != 'RATING':  # OSI RESTAURANT PARTNERS has no rating (52300)
+        rating['score'] = int(score)
+        rating['judgment'] = STYLE_TO_JUDGMENT[company_h2.span['style']]
 
     website_label = rating_section.find('strong', text='Website:')
     if website_label:  # sometimes missing, like on Invesco (1109)
@@ -162,6 +168,9 @@ def scrape_company_profile(org_id):
 
 
 def scrape_category(cat_id):
+    # currently only using this for brand category information
+    # companies can have brands in multiple categories, so scraping
+    # them from the brand page could get complicated
     url = RANKING_URL_FMT.format(cat_id)
     soup = BeautifulSoup(scraperwiki.scrape(url))
 
