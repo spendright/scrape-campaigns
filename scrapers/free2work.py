@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import os
 import scraperwiki
@@ -6,6 +7,8 @@ import sys
 from bs4 import BeautifulSoup
 
 API_TOKEN = '7baaa18a777fc27287ad5898750cfe09'
+
+CAMPAIGN_URL = 'http://www.free2work.org/'
 
 INDUSTRIES_URL = (
     'http://widgets.free2work.org/web_api/getIndustryList/graded/?token=' +
@@ -23,6 +26,21 @@ RATINGS_URL = 'http://widgets.free2work.org/frontend_ratings/public_view/'
 DUPLICATE_RATINGS = [1095]
 
 JSON_CALLBACK_RE = re.compile('jsonCallback\((.*)\)')
+
+# TODO: scrape this from the page
+CAMPAIGN = {
+    'name': 'Free2Work',
+    'goal': 'End Human Trafficking and Slavery',
+    'url': 'http://www.free2work.org/',
+    'author': 'Not for Sale',
+    'contributors': 'International Labor Rights Forum, Baptist World Aid',
+    'copyright': u'©2010-2014 NOT FOR SALE',
+    'author_url': 'http://www.notforsalecampaign.org/',
+    'donate_url': 'https://nfs.webconnex.com/free2work',
+    'twitter_handle': '@F2W',
+    'facebook_url': 'http://www.facebook.com/Free2Work',
+    'email': 'feedback@free2work.org',
+}
 
 
 # name and assesment scope field may have a suffix that indicates scope
@@ -233,6 +251,8 @@ def scrape_rating_ids():
 
 
 def scrape_campaign():
+    yield 'campaign', CAMPAIGN
+
     # hook for debugging
     if os.environ.get('MORPH_FREE2WORK_RATING_IDS'):
         rating_ids = map(int,

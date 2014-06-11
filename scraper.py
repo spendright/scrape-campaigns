@@ -106,12 +106,21 @@ def clear_campaign(campaign):
 
 def save_records(campaign, records):
     for record_type, record in records:
-        if record_type == 'rating':
-            save_rating(campaign, record)
-        elif record_type == 'brand_category':
+        if record_type == 'brand_category':
             save_brand_category(campaign, record)
+        elif record_type == 'campaign':
+            save_campaign(campaign, record)
+        elif record_type == 'rating':
+            save_rating(campaign, record)
         else:
             raise NotImplementedError(record_type)
+
+
+def save_campaign(campaign, record):
+    scraperwiki.sql.save(
+        ['campaign_id'],
+        dict(campaign_id=campaign, **record),
+        table_name='campaign')
 
 
 def save_rating(campaign, rating):
@@ -140,7 +149,8 @@ def save_rating(campaign, rating):
 def save_brand_category(campaign, brand_category):
     scraperwiki.sql.save(
         ['campaign_id', 'company', 'brand', 'category'],
-        dict(campaign_id=campaign, **brand_category))
+        dict(campaign_id=campaign, **brand_category),
+        table_name='campaign_brand_category')
 
 
 def get_scraper_names():
