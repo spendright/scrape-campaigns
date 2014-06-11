@@ -4,6 +4,11 @@ import json
 import scraperwiki
 
 # fetch everything, through the API
+# TODO: scrape http://climatecounts.org/searchresults.php?p=brands instead
+# and http://climatecounts.org/searchresults.php?p=cat (for companies
+# with no brands listed)
+# TODO: can also add a ranking of companies by sector, though we have
+# to figure out how to handle Siemens
 API_URL = 'http://api.climatecounts.org/1/Companies.json?IncludeBrands=true&IncludeScores=true'
 
 DETAILS_URL_PATTERN = 'http://climatecounts.org/scorecard_score.php?co={:d}'
@@ -24,6 +29,7 @@ CAMPAIGN = {
     'twitter_handle': '@ClimateCounts',
     'facebook_url': 'http://www.facebook.com/pages/Climate-Counts/7698023321',
 }
+
 
 
 SECTOR_CORRECTIONS = {
@@ -65,11 +71,14 @@ def scrape_campaign():
         if c['Brands']:
             rating['brands'] = c['Brands']
 
-        rating['url'] = DETAILS_URL_PATTERN.format(c['CompanyID'])
+        # sadly, the IDs on the website don't match the IDs for the API
+        # TODO: scrape the website
+        # rating['url'] = DETAILS_URL_PATTERN.format(c['CompanyID'])
+
         sector = c['Sector']
         rating['categories'] = [SECTOR_CORRECTIONS.get(sector) or c['Sector']]
 
-        if c.get('Scores') and c['Scores'].get('Scores'):
+        if not (c.get('Scores') and c['Scores'].get('Scores')):
             scores = c['Scores']['Scores'][-1]
 
             rating['score'] = scores['Total']
