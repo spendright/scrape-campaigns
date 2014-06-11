@@ -56,10 +56,21 @@ def scrape_campaign():
     start = scrape_start_page()
     yield 'campaign', start['campaign']
 
+    if 'MORPH_HRC_CAT_IDS' in environ:
+        cat_ids = map(int, environ['MORPH_HRC_CAT_IDS'].split(','))
+    else:
+        cat_ids = sorted(start['categories'])
+
     if 'MORPH_HRC_ORG_IDS' in environ:
         org_ids = map(int, environ['MORPH_HRC_ORG_IDS'].split(','))
     else:
         org_ids = sorted(start['orgs'])
+
+    for cat_id in cat_ids:
+        cat_name = start['categories'][cat_id]
+        print u'Cat {:d}: {}'.format(cat_id, cat_name).encode('utf-8')
+        for record in scrape_company_profile(cat_id):
+            yield record
 
     for org_id in org_ids:
         org_name = start['orgs'][org_id]
@@ -89,7 +100,6 @@ def scrape_start_page():
         soup.select('select[name=orgid] option'))
 
     return d
-
 
 
 def scrape_company_profile(org_id):
@@ -153,7 +163,19 @@ def scrape_company_profile(org_id):
 
 def scrape_category(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
+    soup = BeautifulSoup(scraperwiki.scrape(url))
 
-    div = sections = soup.select('div.legislation-box')[1]
+    div = soup.select('div.legislation-box')[1]
 
     category = div.h2.text.strip()
+
+    for tr in div.select('tr')[1:]:  # skip header
+        strings = list(tr.td.stripped_strings)
+        company = strings[0]
+
+        # brands are followed by ";"
+        for i, s in enumerate(strings):
+            if s == ';':
+                brand = strings[i - 1]
+                yield 'brand_category', dict(
+                    company=company, brand=brand, category=category)
