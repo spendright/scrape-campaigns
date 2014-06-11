@@ -194,11 +194,11 @@ def scrape_category(cat_id):
     data = scraperwiki.scrape(url)
 
     import time
-    time.sleep(5)
+    time.sleep(60)
 
     print 'Converting to soup'
     soup = BeautifulSoup(data)
-    time.sleep(5)
+    time.sleep(60)
 
     print 'Parsing'
     div = soup.select('div.legislation-box')[1]
