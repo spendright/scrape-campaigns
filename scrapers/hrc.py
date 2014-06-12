@@ -1,3 +1,4 @@
+import logging
 from os import environ
 from os.path import basename
 from urlparse import urljoin
@@ -48,6 +49,8 @@ IMG_TO_JUDGMENT = {
     'red.jpg': -1,
 }
 
+log = logging.getLogger(__name__)
+
 
 def fix_url(url):
     if '://' not in url:
@@ -61,7 +64,7 @@ def list_to_dict(a):
 
 
 def scrape_campaign():
-    print 'Landing page'
+    log.info('Landing page')
     landing = scrape_landing_page()
     yield 'campaign', landing['campaign']
 
@@ -89,17 +92,16 @@ def scrape_campaign():
             continue
 
         cat_name = landing['categories'][cat_id]
-        print u'Cat {:d}: {} ({:d} of {:d})'.format(
-            cat_id, cat_name, i + 1, len(all_cat_ids)).encode('utf-8')
+        log.info(u'Cat {:d}: {} ({:d} of {:d})'.format(
+            cat_id, cat_name, i + 1, len(all_cat_ids)))
         for record in scrape_category(cat_id):
-            print repr(record)
             yield record
 
     # scrape company pages (if requested to)
     for i, org_id in enumerate(org_ids):
         org_name = landing['orgs'][org_id]
-        print u'Org {:d}: {} ({:d} of {:d})'.format(
-            org_id, org_name, i + 1, len(org_ids)).encode('utf-8')
+        log.info(u'Org {:d}: {} ({:d} of {:d})'.format(
+            org_id, org_name, i + 1, len(org_ids)))
         for record in scrape_company_profile(org_id):
             yield record
 

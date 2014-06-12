@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 import os
 import scraperwiki
 import re
@@ -116,6 +117,8 @@ REPORT_YEARS = [
     ('Electronics', 2014),
 ]
 
+log = logging.getLogger(__name__)
+
 
 def grade_to_judgment(grade):
     """Convert a letter grade (e.g. "B+") to a judgment (1 for A or B,
@@ -133,7 +136,7 @@ def scrape_rating(rating_id):
 
     # handle header field (brand)
     brand = soup.select('.rating-name')[0].text.strip()
-    print u'Rating {}: {}'.format(rating_id, brand).encode('utf-8')
+    log.info(u'Rating {}: {}'.format(rating_id, brand))
 
     for suffix in SUFFIXES:
         if brand.endswith(suffix):
@@ -244,8 +247,7 @@ def scrape_rating_ids():
     rating_ids = set()
 
     for industry_id, industry_name in sorted(scrape_industries().items()):
-        print u'Industry {}: {}'.format(
-            industry_id, industry_name).encode('utf-8')
+        log.info(u'Industry {}: {}'.format(industry_id, industry_name))
         rating_ids.update(scrape_rating_ids_for_industry(industry_id))
 
     return sorted(rating_ids)

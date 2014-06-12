@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 
 import scraperwiki
 
@@ -49,11 +50,13 @@ PROGRESS_TO_JUDGMENT = {
 MIN_SCORE = 0
 MAX_SCORE = 100
 
+log = logging.getLogger(__name__)
+
 
 def scrape_campaign():
     yield 'campaign', CAMPAIGN
 
-    print 'Fetching all data from API'
+    log.info('Fetching all data from API')
     j = json.loads(scraperwiki.scrape(API_URL))
     companies = j['Companies']
 

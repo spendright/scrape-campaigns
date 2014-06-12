@@ -7,19 +7,26 @@ their names on the command line (e.g. python scraper.py avon kraft).
 It's fine to import from this module inside a scraper
 (e.g. from scraper import TM_SYMBOLS)
 """
+import logging
+import sys
 from collections import defaultdict
 from os.path import dirname
 from os import environ
 from os import listdir
 from traceback import print_exc
-import sys
 
 import scraperwiki
 
 import scrapers
 
 
+log = logging.getLogger('scraper')
+
+
 def main():
+    logging.basicConfig(format='%(name)s: %(message)s',
+                        level=logging.INFO)
+
     if sys.argv[1:]:
         campaigns = sys.argv[1:]
     elif environ.get('MORPH_CAMPAIGNS'):
@@ -32,7 +39,7 @@ def main():
     failed = False
 
     for campaign in campaigns:
-        sys.stderr.write('Scraping Campaign: {}\n'.format(campaign))
+        log.info('Launching scraper: {}'.format(campaign))
         try:
             scraper = load_scraper(campaign)
 
