@@ -23,7 +23,7 @@ Here are the organizations I've personally talked to:
 
  * [Climate Counts](http://climatecounts.org/): No problem. Their website actually [explicitly invites people to build tools that use their data](http://api.climatecounts.org/docs/).
  * Not For Sale (creators of [Free2Work](http://www.free2work.org/)): Gave me permission, seem like they'd be fine with other people using it.
- * Food Empowerment Project (creators of [F.E.P.'s Chocolate List](http://www.foodispower.org/chocolate-list/)): Have to ask the board. (Haven't written a scraper for this yet.)
+ * Food Empowerment Project (creators of [F.E.P.'s Chocolate List](http://www.foodispower.org/chocolate-list/)): Has to be approved by the board. (Haven't written a scraper for this yet.)
 
 I've tried contacting [HRC](http://www.hrc.org/) through their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. (If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!)
 
