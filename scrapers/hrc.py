@@ -187,7 +187,7 @@ def scrape_company_profile(org_id):
         if b != 'end While']
 
     rating['company'] = company
-    yield 'rating', rating
+    yield 'company_rating', rating
 
 
 def scrape_category(cat_id):
@@ -222,7 +222,7 @@ def scrape_category(cat_id):
             img = tds[1].img
             rating['judgment'] = IMG_TO_JUDGMENT[basename(img['src'])]
 
-        yield 'rating', rating
+        yield 'company_rating', rating
 
         # extract brands
         strings = list(tds[0].stripped_strings)

@@ -92,4 +92,4 @@ def scrape_campaign():
             rating['judgment'] = PROGRESS_TO_JUDGMENT[scores['Progress']]
             rating['date'] = str(scores['Year'])
 
-        yield 'rating', rating
+        yield 'company_rating', rating

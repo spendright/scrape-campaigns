@@ -267,4 +267,6 @@ def scrape_campaign():
         if rating_id in DUPLICATE_RATINGS:
             continue
 
-        yield 'rating', scrape_rating(rating_id)
+        # Free2Work's ratings mostly apply to companies, but only in certain
+        # product categories. Using brands to play it safe.
+        yield 'brand_rating', scrape_rating(rating_id)

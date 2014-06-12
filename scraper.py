@@ -62,37 +62,39 @@ TABLE_TO_KEY_FIELDS = {
     'campaign_brand': ['company', 'brand'],
     # factual information about which categories a brand belongs to
     'campaign_brand_category': ['company', 'brand', 'category'],
+    # should you buy this brand?
+    'campaign_brand_rating': ['company', 'brand', 'scope'],
     # factual information about a company (e.g. url, email, etc.)
     'campaign_company': ['company'],
     # factual information about which categories a company belongs to
     'campaign_company_category': ['company', 'category'],
-    # subjective recommendations on various brands/companies
-    'campaign_rating': ['company', 'brand', 'scope'],
+    # should you buy from this company?
+    'campaign_company_rating': ['company', 'scope'],
 }
 
 
+RATING_FIELDS = [
+    # -1 (bad), 0 (mixed), or 1 (good). Lingua franca of ratings
+    ('judgment', 'TINYINT'),
+    # letter grade
+    ('grade', 'TEXT'),
+    # written description (e.g. cannot recommend)
+    ('description', 'TEXT'),
+    # numeric score (higher numbers are good)
+    ('score', 'NUMERIC'),
+    ('min_score', 'NUMERIC'),
+    ('max_score', 'NUMERIC'),
+    # ranking (low numbers are good)
+    ('rank', 'INTEGER'),
+    ('num_ranked', 'INTEGER'),
+    # url for details about the rating
+    ('url', 'TEXT'),
+]
 
 
 TABLE_TO_EXTRA_FIELDS = {
-    'campaign_rating': [
-        # "brand", "company" etc.
-        ('target_type', 'TEXT'),
-        # -1 (bad), 0 (mixed), or 1 (good). Lingua franca of ratings
-        ('judgment', 'TINYINT'),
-        # letter grade
-        ('grade', 'TEXT'),
-        # written description (e.g. cannot recommend)
-        ('description', 'TEXT'),
-        # numeric score (higher numbers are good)
-        ('score', 'NUMERIC'),
-        ('min_score', 'NUMERIC'),
-        ('max_score', 'NUMERIC'),
-        # ranking (low numbers are good)
-        ('rank', 'INTEGER'),
-        ('num_ranked', 'INTEGER'),
-        # url for details about the rating
-        ('url', 'TEXT'),
-    ]
+    'campaign_brand_rating': RATING_FIELDS,
+    'campaing_company_rating': RATING_FIELDS,
 }
 
 
@@ -108,7 +110,6 @@ def init_tables():
         key_fields = ['campaign_id'] + key_fields
 
         sql = 'CREATE TABLE IF NOT EXISTS `{}` ('.format(table)
-        sql += '`campaign_id` TEXT, '
         for k in key_fields:
             sql += '`{}` TEXT, '.format(k)
         for k, field_type in TABLE_TO_EXTRA_FIELDS.get(table) or ():
@@ -119,8 +120,7 @@ def init_tables():
 
 
 def clear_campaign(campaign):
-    for table in ('campaign', 'campaign_brand', 'campaign_brand_category',
-                  'campaign_rating'):
+    for table in sorted(TABLE_TO_KEY_FIELDS):
         scraperwiki.sql.execute(
             'DELETE FROM {} WHERE campaign_id = ?'.format(table), [campaign])
 
@@ -162,11 +162,6 @@ def save_records(campaign, records):
                 for category in record.pop('categories'):
                     handle('company_category', dict(
                         company=company, category=category))
-
-        # automatic rating target_type
-        if record_type == 'rating':
-            if 'target_type' not in record:
-                record['target_type'] = 'brand' if brand else 'company'
 
         # automatic brand entries
         if 'brand' in record and record_type != 'brand':
