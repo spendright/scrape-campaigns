@@ -190,10 +190,10 @@ def scrape_company_profile(org_id):
 
 def scrape_category(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
-    data = scraperwiki.scrape(url)
+    html = scraperwiki.scrape(url)
     # runs out of memory on morph.io (killed by some supervisor process)
     # parsing http://www.hrc.org/apps/buyersguide/ranking.php?category=1223
-    soup = BeautifulSoup(data)
+    soup = BeautifulSoup(html)
     div = soup.select('div.legislation-box')[1]
 
     category = div.h2.text.strip()
