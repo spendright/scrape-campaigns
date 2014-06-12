@@ -180,6 +180,11 @@ def save_records(campaign, records):
                  else 'campaign_' + record_type)
         key_fields = TABLE_TO_KEY_FIELDS[table]
 
+        # strip strings before storing them
+        for k in record:
+            if isinstance(record[k], basestring):
+                record[k] = record[k].strip()
+
         for k in key_fields:
             if k not in record:
                 record[k] = ''
