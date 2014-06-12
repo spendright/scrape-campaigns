@@ -12,7 +12,8 @@ Using the Data
 --------------
 
 This is an Open Source project, so *we* don't place any restrictions on the
-data.
+data. If all is going well (which it sometimes does), you can even download
+it from [the project's morph.io page](https://morph.io/spendright-scrapers/campaigns).
 
 However, these campaigns are copyrighted by the non-profits who created them,
 so ideally, you should get their permission before using it for anything more
@@ -20,9 +21,11 @@ than research, journalism, etc.
 
 Here are the organizations I've personally talked to:
 
- * Climate Counts: No problem. Their website actually [explicitly invites people to build tools that use their data](http://api.climatecounts.org/docs/)
+ * [Climate Counts](http://climatecounts.org/): No problem. Their website actually [explicitly invites people to build tools that use their data](http://api.climatecounts.org/docs/).
+ * Not For Sale (creators of [Free2Work](http://www.free2work.org/)): Gave me permission, seem like they'd be fine with other people using it.
+ * Food Empowerment Project (creators of [F.E.P.'s Chocolate List](http://www.foodispower.org/chocolate-list/)): Have to ask the board. (Haven't written a scraper for this yet.)
 
- * Free2Work: Gave me permission, seem like they'd be fine with other people using it.
+I've tried contacting [HRC](http://www.hrc.org/) through their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. (If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!)
 
 If you can't contact an organization whose data you'd like to use, go with
 common sense. Most of these organizations are more interested in changing
@@ -33,10 +36,10 @@ the world that exercising their intellectual property rights. Be polite:
  * Don't use it to frustrate the organization's intent (e.g. using the
    HRC Buyer's Guide to support companies that discriminate against LGBT
    employees).
- * Link to the organization's donation page. Consumer campaigns take a lot
+ * Link to the organization's donation page. Quality data like this takes a lot
    of time and money to create!
 
-Some organizations sell access to their data (e.g. [Ethical Consumer](http://www.ethicalconsumer.org/). I won't be writing scrapers for these, or accepting patches.
+Some organizations sell access to their data (e.g. [Ethical Consumer](http://www.ethicalconsumer.org/). I won't be writing scrapers for these, or accepting pull requests that do this.
 
 
 Data format
@@ -51,8 +54,12 @@ name, its author, and its URL.
 campaign: should I buy from this brand/company?
 
 The other tables contain "facts" embedded within a consumer campaign, such
-as a company's URL, or which brands belong to a certain company. "Facts" is in
-quotes; consumer campaigns don't always have correct information.
+as which brands belong to a certain company. Currently, `company` and `brands`
+contain simple information about a brand or company (e.g. the URL) and
+`brand_category`/`company_category` store zero or more free-form categories
+for each brand/company.
+
+"Facts" is in quotes; consumer campaigns don't always have correct information.
 
 Here are some of the fields used in these tables:
 
@@ -74,8 +81,8 @@ Some fields used specifically for scoring:
  * score: a numerical score, where higher is better. Used with min_score and max_score.
  * grade: a US-style letter grade (e.g. A-, C+). Also works for A-E rating systems such as used on [rankabrand](http://rankabrand.org/) and [CDP](https://www.cdp.net/)
  * rank: a ranking, where 1 is best. Used with num_ranked.
- * description: a free-form description that works as a rating (e.g. "Cannot recommend")
- * caveat: useful information that is tangential to the main purpose of the campaign (e.g. "high in mercury" for a campaign about saving fisheries).
+ * description: a free-text description that works as a rating (e.g. "Cannot recommend")
+ * caveat: free-text useful information that is tangential to the main purpose of the campaign (e.g. "high in mercury" for a campaign about saving fisheries).
 
 We try to clean up any obvious formatting issues in the source data, but there
 isn't any attempt to *normalize* the data; some campaigns may put "Inc." after
