@@ -29,7 +29,7 @@ JSON_CALLBACK_RE = re.compile('jsonCallback\((.*)\)')
 
 # TODO: scrape this from the page
 CAMPAIGN = {
-    'name': 'Free2Work',
+    'campaign': 'Free2Work',
     'goal': 'End Human Trafficking and Slavery',
     'url': 'http://www.free2work.org/',
     'author': 'Not for Sale',

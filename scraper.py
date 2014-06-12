@@ -131,6 +131,11 @@ def save_records(campaign, records):
     def handle(record_type, record):
         """handle a record from a scraper, which main contain/imply
         other records"""
+        if record_type.startswith('campaign'):
+            table = record_type
+        else:
+            table = 'campaign_' + record_type
+
         record = record.copy()
 
         # allow company to be a dict with company info
@@ -164,20 +169,18 @@ def save_records(campaign, records):
                         company=company, category=category))
 
         # automatic brand entries
-        if 'brand' in record and record_type != 'brand':
+        if 'brand' in record and table != 'campaign_brand':
             handle('brand', dict(company=company, brand=brand))
 
         # automatic company entries
-        if 'company' in record and record_type != 'company':
+        if 'company' in record and table != 'campaign_company':
             handle('company', dict(company=company))
 
-        store(record_type, record)
+        store(table, record)
 
-    def store(record_type, record):
+    def store(table, record):
         """store an upacked record in table_to_key_to_row, possibly
         merging it with a previous record."""
-        table = ('campaign' if record_type == 'campaign'
-                 else 'campaign_' + record_type)
         key_fields = TABLE_TO_KEY_FIELDS[table]
 
         # strip strings before storing them

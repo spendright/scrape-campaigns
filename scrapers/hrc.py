@@ -11,7 +11,7 @@ URL = 'http://www.hrc.org/apps/buyersguide/'
 # TODO: scrape more of this
 # TODO: scrape iphone, android app URLs
 CAMPAIGN = {
-    'name': "HRC Buyer's Guide",
+    'campaign': "HRC Buyer's Guide",
     'author': 'Human Rights Campaign',
     # compacted from "by supporting businesses that support workplace
     # equality you send a powerful message that LGBT inclusion is good for the

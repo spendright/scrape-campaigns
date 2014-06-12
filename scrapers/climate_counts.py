@@ -17,7 +17,7 @@ DETAILS_URL_PATTERN = 'http://climatecounts.org/scorecard_score.php?co={:d}'
 
 # TODO: scrape this from the page
 CAMPAIGN = {
-    'name': 'Climate Counts Scorecard',
+    'campaign': 'Climate Counts Scorecard',
     # Compacted version of "We help consumers use their choices & voices
     # to motivate the world's largest companies to operate more sustainably
     # and reduce their climate impact"
