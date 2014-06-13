@@ -77,12 +77,17 @@ feedback_url).
 
 Some fields used specifically for scoring:
 
- * judgment: 1 if you should support this company/brand, -1 if you should avoid it, and 0 if it's a mixed bag. All scrapers produce this, regardless of the campaigns' rating system, so that you can aggregate multiple campaigns.
  * score: a numerical score, where higher is better. Used with min_score and max_score.
  * grade: a US-style letter grade (e.g. A-, C+). Also works for A-E rating systems such as used on [rankabrand](http://rankabrand.org/) and [CDP](https://www.cdp.net/)
  * rank: a ranking, where 1 is best. Used with num_ranked.
  * description: a free-text description that works as a rating (e.g. "Cannot recommend")
  * caveat: free-text useful information that is tangential to the main purpose of the campaign (e.g. "high in mercury" for a campaign about saving fisheries).
+
+This is all very descriptive, but not terribly useful if you want to, say,
+compare how a brand fares in several consumer campaigns at once. That's what
+the `judgment` field is for:
+
+ * judgment: 1 for "support", -1 for "avoid" and 0 for something in between ("consider")
 
 We try to clean up any obvious formatting issues in the source data, but there
 isn't any attempt to *normalize* the data; some campaigns may put "Inc." after
@@ -133,6 +138,13 @@ Rows in `campaign_company` and `campaign_brand` are automatically created
 for every company and brand/company pair mentioned. You might still want to
 emit rows for companies or brands if you have additional information (e.g.
 their `twitter_handle`).
+
+Translating a campaign's ratings into a `judgment` is sometimes (ahem) a
+judgment call, but it's usually obvious. Mapping green to 1, yellow to 0, and
+red to -1 is a pretty safe bet, as is (for grades) mapping A and B to 1,
+C to 0, and D through F to -1. Sometimes the campaign is just a list of things
+to support or avoid, in which case you should use the same judgment throughout.
+If you're not sure, ask the campaign's creator.
 
 Once you're done, submit a pull request on GitHub.
 
