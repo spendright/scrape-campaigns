@@ -63,46 +63,51 @@ def list_to_dict(a):
     return dict(a[i:i+2] for i in range(0, len(a), 2))
 
 
+def ids_from_env(envvar):
+    if environ.get(envvar):
+        return map(int, environ[envvar].split(','))
+    else:
+        return []
+
+
 def scrape_campaign():
     log.info('Landing page')
     landing = scrape_landing_page()
     yield 'campaign', landing['campaign']
 
+    # TODO: make a single function that scrapes cats or orgs
+
     # manually set cat/org IDs from environment
-    all_cat_ids = sorted(landing['categories'])
+    all_cat_ids = sorted(landing['cats'])
+    # set this to '0' to not scrape cat pages
+    cat_ids = ids_from_env('MORPH_HRC_CAT_IDS')
+    skip_cat_ids = ids_from_env('MORPH_HRC_SKIP_CAT_IDS')
 
-    cat_ids = []
-    if 'MORPH_HRC_CAT_IDS' in environ:
-        cat_ids = map(int, environ['MORPH_HRC_CAT_IDS'].split(','))
-
-    skip_cat_ids = []
-    if 'MORPH_HRC_SKIP_CAT_IDS' in environ:
-        skip_cat_ids = map(int, environ['MORPH_HRC_SKIP_CAT_IDS'].split(','))
-
-    # by default, don't scrape org pages because there are so many
-    org_ids = []
-    if 'MORPH_HRC_ORG_IDS' in environ:
-        org_ids = map(int, environ['MORPH_HRC_ORG_IDS'].split(','))
-    elif environ.get('MORPH_HRC_SCRAPE_ORGS'):
-        org_ids = sorted(landing['orgs'])
+    # set this to '0' to not scrape org pages
+    all_org_ids = sorted(landing['orgs'])
+    org_ids = ids_from_env('MORPH_HRC_ORG_IDS')
+    skip_org_ids = ids_from_env('MORPH_HRC_SKIP_ORG_IDS')
 
     # scrape category pages
     for i, cat_id in enumerate(all_cat_ids):
         if cat_id in skip_cat_ids or (cat_ids and cat_id not in cat_ids):
             continue
 
-        cat_name = landing['categories'][cat_id]
+        cat_name = landing['cats'][cat_id]
         log.info(u'Cat {:d}: {} ({:d} of {:d})'.format(
             cat_id, cat_name, i + 1, len(all_cat_ids)))
-        for record in scrape_category(cat_id):
+        for record in scrape_cat_page(cat_id):
             yield record
 
-    # scrape company pages (if requested to)
-    for i, org_id in enumerate(org_ids):
+    # scrape company pages
+    for i, org_id in enumerate(all_org_ids):
+        if org_id in skip_org_ids or (org_ids and org_id not in org_ids):
+            continue
+
         org_name = landing['orgs'][org_id]
         log.info(u'Org {:d}: {} ({:d} of {:d})'.format(
-            org_id, org_name, i + 1, len(org_ids)))
-        for record in scrape_company_profile(org_id):
+            org_id, org_name, i + 1, len(all_org_ids)))
+        for record in scrape_org_page(org_id):
             yield record
 
 
@@ -120,7 +125,7 @@ def scrape_landing_page():
 
     soup = BeautifulSoup(scraperwiki.scrape(URL))
 
-    d['categories'] = options_to_dict(
+    d['cats'] = options_to_dict(
         soup.select('select[name=category] option'))
 
     d['orgs'] = options_to_dict(
@@ -129,7 +134,7 @@ def scrape_landing_page():
     return d
 
 
-def scrape_company_profile(org_id):
+def scrape_org_page(org_id):
     company = {}
     rating = {}
 
@@ -190,7 +195,7 @@ def scrape_company_profile(org_id):
     yield 'company_rating', rating
 
 
-def scrape_category(cat_id):
+def scrape_cat_page(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
     html = scraperwiki.scrape(url)
     # runs out of memory on morph.io (killed by some supervisor process)
