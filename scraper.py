@@ -8,6 +8,7 @@ It's fine to import from this module inside a scraper
 (e.g. from scraper import TM_SYMBOLS)
 """
 import logging
+import re
 import sys
 from collections import defaultdict
 from os.path import dirname
@@ -221,6 +222,38 @@ def load_scraper(name):
     module_name = 'scrapers.' + name
     __import__(module_name)
     return sys.modules[module_name]
+
+
+# UTILITY CODE FOR SCRAPERS
+
+def scrape_copyright(soup, required=True):
+    """Quick and dirty copyright notice scraper."""
+    for s in soup.stripped_strings:
+        if s.startswith(u'©'):
+            return s
+
+    if required:
+        raise ValueError('Copyright notice not found!')
+
+
+TWITTER_URL_RE = re.compile(r'^http://twitter\.com/(\w+)/?$', re.I)
+
+def scrape_twitter_handle(soup, required=True):
+    for a in soup.findAll('a'):
+        m = TWITTER_URL_RE.match(a.get('href', ''))
+        if m:
+            handle = '@' + m.group(1)
+            # use capitalization of handle in text, if aviailable
+            if a.text and a.text.strip().lower() == handle.lower():
+                handle = a.text.strip()
+            return handle
+
+    if required:
+        raise ValueError('Twitter handle not found!')
+
+
+
+
 
 
 if __name__ == '__main__':
