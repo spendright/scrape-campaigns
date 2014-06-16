@@ -83,8 +83,11 @@ def main():
             continue
 
         log.info('Launching ruby scraper: {}'.format(campaign))
+
+        campaign_log = logging.getLogger('scrapers.{}'.format(campaign))
+
         try:
-            records = run_ruby_scraper(rb)
+            records = run_ruby_scraper(rb, campaign_log)
 
             clear_campaign(campaign)
             save_records(campaign, records)
@@ -99,7 +102,7 @@ def main():
     sys.exit(int(failed))
 
 
-def run_ruby_scraper(rb):
+def run_ruby_scraper(rb, log=log):
     """Run a Ruby scraper. Return a list of records if successful,
     None if not.
     """
@@ -121,7 +124,7 @@ def run_ruby_scraper(rb):
                     record = json.loads(line)
                     table = record.pop('table')
 
-                    log.info(u'parsed {} record: {}'.format(
+                    log.info(u'{}: {}'.format(
                         table, guess_entity_name(record)))
 
                     yield table, record
