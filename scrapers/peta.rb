@@ -50,10 +50,14 @@ end
 # don't buffer output
 $stdout.sync = true
 
-safe_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=8&Product=0&Dotest=-1&Regchange=-1&Country=-1&Keyword='
-avoid_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=-1&Product=0&Dotest=8&Regchange=-1&Country=-1&Keyword='
-
 puts ({'table' => 'campaign', 'goal' => 'Stop animal testing', 'campaign' => 'Beauty Without Bunnies', 'author' => 'People For the Ethical Treatment of Animals', 'url' => 'http://features.peta.org/cruelty-free-company-search/index.aspx', 'donate_url' => 'https://secure.peta.org/site/Donation2'}).to_json
 
-action_do(safe_url, {'description' => 'Does not test on animals', 'judgment' => 1})
-action_do(avoid_url, {'description' => 'Tests on animals', 'judgment' => -1})
+# TODO: could probably more easily scrape this from the page
+safe_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=8&Product=0&Dotest=-1&Regchange=-1&Country=-1&Keyword='
+consider_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=-1&Product=0&Dotest=-1&Regchange=8&Country=-1&Keyword='
+avoid_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=-1&Product=0&Dotest=8&Regchange=-1&Country=-1&Keyword='
+
+# trying to match the capitalization used on the page
+action_do(safe_url, {'description' => 'Does Not Test on Animals', 'judgment' => 1})
+action_do(consider_url, {'description' => 'Working for Regulatory Change', 'judgment' => 0})
+action_do(avoid_url, {'description' => 'Tests on Animals', 'judgment' => -1})

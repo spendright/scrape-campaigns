@@ -115,15 +115,18 @@ def run_ruby_scraper(rb):
 
     try:
         for i, line in enumerate(p.stdout):
-            log.info('parsing output line {:d}'.format(i + 1))
-
             line = line.rstrip()
             if line:
                 try:
                     record = json.loads(line)
-                    yield record.pop('table'), record
+                    table = record.pop('table')
+
+                    log.info('parsed {} record: {}'.format(
+                        table, guess_entity_name(record)))
+
+                    yield table, record
                 except:
-                    log.info(line)
+                    log.info(repr(line))
                     raise
 
         p.wait()
@@ -207,6 +210,21 @@ def clear_campaign(campaign):
     for table in sorted(TABLE_TO_KEY_FIELDS):
         scraperwiki.sql.execute(
             'DELETE FROM {} WHERE campaign_id = ?'.format(table), [campaign])
+
+
+def guess_entity_name(record):
+    """Guess the name (brand, company, or campaign) of a record,
+    for logging."""
+    return (_guess_entity_name(record) or '').strip()
+
+
+def _guess_entity_name(record):
+    for key in 'brand', 'company', 'campaign':
+        if record.get(key):
+            if isinstance(record[key], dict):
+                return record[key].get(key)
+            else:
+                return record[key]
 
 
 def save_records(campaign, records):
