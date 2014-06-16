@@ -121,7 +121,7 @@ def run_ruby_scraper(rb):
                     record = json.loads(line)
                     table = record.pop('table')
 
-                    log.info('parsed {} record: {}'.format(
+                    log.info(u'parsed {} record: {}'.format(
                         table, guess_entity_name(record)))
 
                     yield table, record
