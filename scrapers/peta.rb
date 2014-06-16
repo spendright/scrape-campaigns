@@ -31,6 +31,7 @@ def action_do(url, rating)
     body = Nokogiri::HTML(cpage.body)
 
     company = {}
+
     # TODO: handle/strip stuff in parens after company name
     # (e.g. "Acure (Better Planet Brands)")
     company['company'] = body.css("span#ctl00_ContentPlaceHolder1_l_CompanyName").text.strip
@@ -45,6 +46,9 @@ def action_do(url, rating)
     puts rating.to_json
   end
 end
+
+# don't buffer output
+$stdout.sync = true
 
 safe_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=8&Product=0&Dotest=-1&Regchange=-1&Country=-1&Keyword='
 avoid_url = 'http://features.peta.org/cruelty-free-company-search/cruelty_free_companies_search.aspx?Donottest=-1&Product=0&Dotest=8&Regchange=-1&Country=-1&Keyword='
