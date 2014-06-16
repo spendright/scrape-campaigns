@@ -119,8 +119,12 @@ def run_ruby_scraper(rb):
 
             line = line.rstrip()
             if line:
-                record = json.loads(line)
-                yield record.pop('table'), record
+                try:
+                    record = json.loads(line)
+                    yield record.pop('table'), record
+                except:
+                    log.info(line)
+                    raise
 
         p.wait()
         if p.returncode != 0:
@@ -131,9 +135,6 @@ def run_ruby_scraper(rb):
         p.wait()
 
         raise
-
-
-
 
 
 # map from table name to fields used for the primary key (not including
