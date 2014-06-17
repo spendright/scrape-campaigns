@@ -41,6 +41,7 @@ MIN_FOR_SUPPORT = 5
 MAX_FOR_AVOID = 3.5
 
 HEADER_RE = re.compile(r'^(.*)\s+(\d+\.\d)/(\d+)$')
+IMG_RE = re.compile(r'^#(\d+)')
 REPORT_CARD_RE = re.compile(r'^Download\s+(.*)\s+report\s+card*$')
 
 
@@ -71,12 +72,17 @@ def scrape_campaign():
     yield 'campaign', c
 
     # rating records
-    for tr in soup.table.findAll('tr'):
+    trs = soup.table.findAll('tr')
+    num_ranked = len(trs)
+
+    for tr in trs:
         header_match = HEADER_RE.match(tr.h2.text.strip())
         company_in_caps, score, max_score = header_match.groups()
         score = Decimal(score)
         max_score = int(max_score)
         judgment = score_to_judgment(score)
+
+        rank = int(IMG_RE.match(tr.img['alt'].strip()).group(1))
 
         # get company name not in ALL CAPS
         company = REPORT_CARD_RE.match((tr.a.text.strip())).group(1)
@@ -88,5 +94,7 @@ def scrape_campaign():
             'company': company,
             'score': score,
             'max_score': max_score,
+            'rank': rank,
+            'num_ranked': num_ranked,
             'judgment': judgment,
         }
