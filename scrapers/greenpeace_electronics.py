@@ -13,6 +13,7 @@
 #   limitations under the License.
 import re
 from decimal import Decimal
+from urlparse import urljoin
 
 import scraperwiki
 from bs4 import BeautifulSoup
@@ -67,7 +68,7 @@ def scrape_campaign():
     c['twitter_handle'] = scrape_twitter_handle(soup)
     # TODO: make a method for scraping facebook URLs
     c['facebook_url'] = soup.select('a.facebook')[0]['href']
-    c['donate_url'] = soup.select('a.donate')[0]['href']
+    c['donate_url'] = urljoin(URL, soup.select('a.donate')[0]['href'])
 
     yield 'campaign', c
 
