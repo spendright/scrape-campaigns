@@ -24,7 +24,8 @@ import scraperwiki
 # with no brands listed)
 # TODO: can also add a ranking of companies by sector, though we have
 # to figure out how to handle Siemens
-API_URL = 'http://api.climatecounts.org/1/Companies.json?IncludeBrands=true&IncludeScores=true'
+API_URL = ('http://api.climatecounts.org/1/Companies.json?IncludeBrands=true&'
+           'IncludeScores=true')
 
 DETAILS_URL_PATTERN = 'http://climatecounts.org/scorecard_score.php?co={:d}'
 
@@ -61,7 +62,6 @@ PROGRESS_TO_JUDGMENT = {
 
 
 
-MIN_SCORE = 0
 MAX_SCORE = 100
 
 log = logging.getLogger(__name__)
@@ -99,7 +99,6 @@ def scrape_campaign():
             scores = c['Scores']['Scores'][-1]
 
             rating['score'] = scores['Total']
-            rating['min_score'] = MIN_SCORE
             rating['max_score'] = MAX_SCORE
 
             rating['description'] = scores['Progress']

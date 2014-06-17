@@ -45,6 +45,9 @@ import scrapers
 
 log = logging.getLogger('scraper')
 
+# 0 is a really common minimum score; auto-fill this
+DEFAULT_MIN_SCORE = 0
+
 
 def main():
     logging.basicConfig(format='%(name)s: %(message)s',
@@ -273,6 +276,10 @@ def save_records(campaign, records):
                     handle('company_category', dict(
                         company=company, category=category))
 
+        # assume min_score of 0 if not specified
+        if 'score' in record and 'min_score' not in record:
+            record['min_score'] = DEFAULT_MIN_SCORE
+
         # automatic brand entries
         if 'brand' in record and table != 'campaign_brand':
             handle('brand', dict(company=company, brand=brand))
@@ -349,7 +356,9 @@ def scrape_copyright(soup, required=True):
 
 TWITTER_URL_RE = re.compile(r'^http://twitter\.com/(\w+)/?$', re.I)
 
+
 def scrape_twitter_handle(soup, required=True):
+    """Find twitter handle on page."""
     for a in soup.findAll('a'):
         m = TWITTER_URL_RE.match(a.get('href', ''))
         if m:
@@ -357,6 +366,7 @@ def scrape_twitter_handle(soup, required=True):
             # use capitalization of handle in text, if aviailable
             if a.text and a.text.strip().lower() == handle.lower():
                 handle = a.text.strip()
+            # TODO: scrape twitter page to get capitalization there
             return handle
 
     if required:

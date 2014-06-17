@@ -45,7 +45,6 @@ RANKING_URL_FMT = (
     'http://www.hrc.org/apps/buyersguide/ranking.php?category={:d}')
 
 
-MIN_SCORE = 0
 MAX_SCORE = 100
 
 
@@ -234,7 +233,6 @@ def scrape_cat_page(cat_id):
         score = tds[2].text.strip()
         if score:
             rating['score'] = int(score)
-            rating['min_score'] = MIN_SCORE
             rating['max_score'] = MAX_SCORE
 
             img = tds[1].img
