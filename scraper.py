@@ -21,13 +21,17 @@ their names on the command line (e.g. python scraper.py avon kraft).
 It's fine to import from this module inside a scraper
 (e.g. from scraper import TM_SYMBOLS)
 """
+import dumptruck
 import json
 import logging
 import pipes
 import re
 import shlex
+import sqlite3
 import sys
+from argparse import ArgumentParser
 from collections import defaultdict
+from decimal import Decimal
 from os.path import basename
 from os.path import dirname
 from os.path import join
@@ -49,15 +53,21 @@ log = logging.getLogger('scraper')
 DEFAULT_MIN_SCORE = 0
 
 
-def main():
-    logging.basicConfig(format='%(name)s: %(message)s',
-                        level=logging.INFO)
+# support decimal type
+dumptruck.PYTHON_SQLITE_TYPE_MAP.setdefault(Decimal, 'real')
+sqlite3.register_adapter(Decimal, str)
 
+
+def main():
+    opts = parse_args()
+
+    level = logging.DEBUG if opts.verbose else logging.INFO
+    logging.basicConfig(format='%(name)s: %(message)s', level=level)
 
     if environ.get('MORPH_CAMPAIGNS'):
         campaigns = environ['MORPH_CAMPAIGNS'].split(',')
     else:
-        campaigns = sys.argv[1:]
+        campaigns = opts.campaigns
 
     init_tables()
 
@@ -72,7 +82,11 @@ def main():
         try:
             scraper = load_scraper(campaign)
 
-            records = list(scraper.scrape_campaign())
+            records = []
+            for record in scraper.scrape_campaign():
+                log.debug(repr(record))
+                records.append(record)
+
             clear_campaign(campaign)
             save_records(campaign, records)
         except:
@@ -103,6 +117,17 @@ def main():
             print_exc()
 
     sys.exit(int(failed))
+
+
+def parse_args(args=None):
+    parser = ArgumentParser()
+    parser.add_argument('campaigns', metavar='N', nargs='*',
+                        help='whitelist of campaigns to scrape')
+    parser.add_argument(
+        '-v', '--verbose', dest='verbose', default=False, action='store_true',
+        help='Enable debug logging')
+
+    return parser.parse_args(args)
 
 
 def run_ruby_scraper(rb, log=log):
@@ -362,6 +387,10 @@ def scrape_twitter_handle(soup, required=True):
     for a in soup.findAll('a'):
         m = TWITTER_URL_RE.match(a.get('href', ''))
         if m:
+            # "share" isn't a twitter handle
+            if m.group(1) == 'share':
+                continue
+
             handle = '@' + m.group(1)
             # use capitalization of handle in text, if aviailable
             if a.text and a.text.strip().lower() == handle.lower():
