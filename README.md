@@ -12,22 +12,36 @@ Using the Data
 --------------
 
 This is an Open Source project, so *we* don't place any restrictions on the
-data. If all is going well (which it sometimes does), you can even download
-it from [the project's morph.io page](https://morph.io/spendright-scrapers/campaigns).
+data. However, these campaigns are copyrighted by the non-profits who created
+them, so ideally, you should get their permission before using it for anything
+more than research, journalism, etc.
 
-However, these campaigns are copyrighted by the non-profits who created them,
-so ideally, you should get their permission before using it for anything more
-than research, journalism, etc.
+Here is the status of the campaigns we scrape:
 
-Here are the organizations I've personally talked to:
+ * bang_accord: [Signatories of the Accord on Fire and Building Safety In
+   Bangladesh](http://www.bangladeshaccord.org/signatories/). No explicit
+   permission, but you probably don't need it; these are just facts.
+ * climate_counts: The [Climate Counts Scorecard](http://climatecounts.org/).
+   Their website actually [explicitly invites people to build tools that use
+   their data](http://api.climatecounts.org/docs/). Send them an email at
+   info@climatecounts.org; they'll be happy to hear from you!
+ * free2work: [Free2Work](http://www.free2work.org/) by Not for Sale.
+   No explicit policy,
+   but have talked to them personally, and they seem to be okay with
+   people using their data. It's a good idea to email feedback@free2work.org,
+   but expect a *very* slow response (weeks to months).
+ * greenpeace_electronics: [Greenpeace International's Guide to Greener
+   Electronics](http://www.greenpeace.org/international/en/campaigns/climate-change/cool-it/Campaign-analysis/Guide-to-Greener-Electronics/). They have an
+   explicit and very liberal [copyright](http://www.greenpeace.org/international/en/Help/copyright2/) policy. If you want to use it commercially, you need
+   to ask permission; email supporter.services.int@greenpeace.org (expect
+   a response within a week).
+ * hrc: The [Human Rights Campaign's Buyer's Guide'](http://www.hrc.org/apps/buyersguide/). No explicit policy on the website. Tried to contact them through
+   their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. *If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!*
+ * peta: [PETA's Beauty Without Bunnies guide](http://features.peta.org/cruelty-free-company-search/index.aspx). They have an explicit and very liberal
+   [copyright](http://www.peta.org/about-peta/learn-about-peta/website-policies/) policy. If you want to use their data commercially, you must fill out
+   [this form](http://www.petafoundation.org/material_usage.asp).
 
- * [Climate Counts](http://climatecounts.org/): No problem. Their website actually [explicitly invites people to build tools that use their data](http://api.climatecounts.org/docs/).
- * Not For Sale (creators of [Free2Work](http://www.free2work.org/)): Gave me permission, seem like they'd be fine with other people using it.
- * Food Empowerment Project (creators of [F.E.P.'s Chocolate List](http://www.foodispower.org/chocolate-list/)): Has to be approved by the board. (Haven't written a scraper for this yet.)
-
-I've tried contacting [HRC](http://www.hrc.org/) through their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. (If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!)
-
-If you can't contact an organization whose data you'd like to use, go with
+If all else fails, go with
 common sense. Most of these organizations are more interested in changing
 the world that exercising their intellectual property rights. Be polite:
 
@@ -36,6 +50,8 @@ the world that exercising their intellectual property rights. Be polite:
  * Don't use it to frustrate the organization's intent (e.g. using the
    HRC Buyer's Guide to support companies that discriminate against LGBT
    employees).
+ * Don't pretend you have the organization's endorsement, or that they
+   have endorsed specific products (even if they've rated them highly).
  * Link to the organization's donation page. Quality data like this takes a lot
    of time and money to create!
 
