@@ -22,24 +22,16 @@ It's fine to import from this module inside a scraper
 (e.g. from scraper import TM_SYMBOLS)
 """
 import dumptruck
-import json
 import logging
-import pipes
 import re
-import shlex
 import sqlite3
 import sys
 from argparse import ArgumentParser
 from collections import defaultdict
 from decimal import Decimal
-from os.path import basename
 from os.path import dirname
-from os.path import join
 from os import environ
 from os import listdir
-from subprocess import CalledProcessError
-from subprocess import PIPE
-from subprocess import Popen
 from traceback import print_exc
 
 import scraperwiki
@@ -93,29 +85,6 @@ def main():
             failed = True
             print_exc()
 
-    # Ruby campaigns
-    for rb in get_ruby_scraper_paths():
-        campaign = basename(rb)[:-3]
-        if campaigns and campaign not in campaigns:
-            continue
-
-        log.info('Launching ruby scraper: {}'.format(campaign))
-
-        campaign_log = logging.getLogger('scrapers.{}'.format(campaign))
-
-        try:
-            records = run_ruby_scraper(rb, campaign_log)
-
-            clear_campaign(campaign)
-            save_records(campaign, records)
-        except CalledProcessError as ex:
-            failed = True
-            log.warn('ruby scraper exited with status {:d}'.format(
-                ex.returncode))
-        except:
-            failed = True
-            print_exc()
-
     sys.exit(int(failed))
 
 
@@ -128,47 +97,6 @@ def parse_args(args=None):
         help='Enable debug logging')
 
     return parser.parse_args(args)
-
-
-def run_ruby_scraper(rb, log=log):
-    """Run a Ruby scraper. Return a list of records if successful,
-    None if not.
-    """
-    if 'MORPH_RUBY_BIN' in environ:
-        ruby_bin = shlex.split(ruby_bin)
-    else:
-        ruby_bin = ['ruby']
-
-    cmd = ruby_bin + [rb]
-    log.info(' '.join(pipes.quote(arg) for arg in cmd))
-
-    p = Popen(cmd, stdout=PIPE)
-
-    try:
-        for i, line in enumerate(p.stdout):
-            line = line.rstrip()
-            if line:
-                try:
-                    record = json.loads(line)
-                    table = record.pop('table')
-
-                    log.info(u'{}: {}'.format(
-                        table, guess_entity_name(record)))
-
-                    yield table, record
-                except:
-                    log.info(repr(line))
-                    raise
-
-        p.wait()
-        if p.returncode != 0:
-            raise CalledProcessError(p.returncode, cmd)
-    except:
-        log.warn('killing ruby scraper')
-        p.terminate()
-        p.wait()
-
-        raise
 
 
 # map from table name to fields used for the primary key (not including
@@ -352,13 +280,6 @@ def get_scraper_names():
     for filename in sorted(listdir(dirname(scrapers.__file__))):
         if filename.endswith('.py') and not filename.startswith('_'):
             yield filename[:-3]
-
-
-def get_ruby_scraper_paths():
-    scrapers_dir = dirname(scrapers.__file__)
-    for filename in sorted(listdir(scrapers_dir)):
-        if filename.endswith('.rb'):
-            yield join(scrapers_dir, filename)
 
 
 def load_scraper(name):
