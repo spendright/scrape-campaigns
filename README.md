@@ -37,9 +37,6 @@ Here is the status of the campaigns we scrape:
    a response within a week).
  * hrc: The [Human Rights Campaign's Buyer's Guide'](http://www.hrc.org/apps/buyersguide/). No explicit policy on the website. Tried to contact them through
    their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. *If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!*
- * peta: [PETA's Beauty Without Bunnies guide](http://features.peta.org/cruelty-free-company-search/index.aspx). They have an explicit and very liberal
-   [copyright](http://www.peta.org/about-peta/learn-about-peta/website-policies/) policy. If you want to use their data commercially, you must fill out
-   [this form](http://www.petafoundation.org/material_usage.asp).
 
 If all else fails, go with
 common sense. Most of these organizations are more interested in changing
