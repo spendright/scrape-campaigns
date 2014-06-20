@@ -323,6 +323,19 @@ def scrape_twitter_handle(soup, required=True):
         raise ValueError('Twitter handle not found!')
 
 
+FACEBOOK_URL_RE = re.compile(r'^http://(www\.)facebook\.com/(\w+)/?$', re.I)
+
+def scrape_facebook_url(soup, required=True):
+    """Find twitter handle on page."""
+    for a in soup.findAll('a'):
+        url = a.get('href')
+        if url and FACEBOOK_URL_RE.match(url):
+            return url
+
+    if required:
+        raise ValueError('Facebook URL not found!')
+
+
 
 
 
