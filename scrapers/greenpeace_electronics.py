@@ -62,9 +62,11 @@ def scrape_campaign():
     c = {'url': URL, 'goal': GOAL}
 
     c['campaign'], c['author'] = soup.title.text.split('|')
+
     # remove double spaces
     c['copyright'] = ' '.join(
         soup.select('#footer ul.privacy')[0].li.stripped_strings)
+
     c['twitter_handle'] = scrape_twitter_handle(soup)
     # TODO: make a method for scraping facebook URLs
     c['facebook_url'] = soup.select('a.facebook')[0]['href']
