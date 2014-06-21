@@ -35,7 +35,7 @@ Here is the status of the campaigns we scrape:
    explicit and very liberal [copyright](http://www.greenpeace.org/international/en/Help/copyright2/) policy. If you want to use it commercially, you need
    to ask permission; email supporter.services.int@greenpeace.org (expect
    a response within a week).
- * hope4congo: [RAISE Hope for Congo's Conflict Minerals Company Rankings](http://www.raisehopeforcongo.org/content/conflict-minerals-company-rankings). They have a scary-sounding but actually very liberal [reuse policy](http://www.raisehopeforcongo.org/content/reuse-policy) that allows commercial reuse. Just make sure to link back to their website and include this text: *This material \[article\] was created by RAISE Hope for Congo, a campaign of the Enough Project*
+ * hope4congo: [RAISE Hope for Congo's Conflict Minerals Company Rankings](http://www.raisehopeforcongo.org/content/conflict-minerals-company-rankings). They have a scary-sounding but actually very liberal [reuse policy](http://www.raisehopeforcongo.org/content/reuse-policy) that even allows commercial reuse. Just make sure to link back to their website and include this text: *This material \[article\] was created by RAISE Hope for Congo, a campaign of the Enough Project*
  * hrc: The [Human Rights Campaign's Buyer's Guide'](http://www.hrc.org/apps/buyersguide/). No explicit policy on the website. Tried to contact them through
    their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. *If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!*
 
