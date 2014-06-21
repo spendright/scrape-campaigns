@@ -300,7 +300,7 @@ def scrape_copyright(soup, required=True):
         raise ValueError('Copyright notice not found!')
 
 
-TWITTER_URL_RE = re.compile(r'^http://twitter\.com/(\w+)/?$', re.I)
+TWITTER_URL_RE = re.compile(r'^http://(www\.)?twitter\.com/(\w+)/?$', re.I)
 
 
 def scrape_twitter_handle(soup, required=True):
@@ -323,7 +323,8 @@ def scrape_twitter_handle(soup, required=True):
         raise ValueError('Twitter handle not found!')
 
 
-FACEBOOK_URL_RE = re.compile(r'^http://(www\.)facebook\.com/(\w+)/?$', re.I)
+FACEBOOK_URL_RE = re.compile(
+    r'^http://(www\.)facebook\.com/(([\w-]+)|pages/[\w-]+/\d+)/?$', re.I)
 
 def scrape_facebook_url(soup, required=True):
     """Find twitter handle on page."""

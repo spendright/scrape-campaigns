@@ -22,6 +22,7 @@ import logging
 import scraperwiki
 from bs4 import BeautifulSoup
 
+from scraper import scrape_copyright
 from scraper import scrape_facebook_url
 from scraper import scrape_twitter_handle
 
@@ -29,21 +30,32 @@ from scraper import scrape_twitter_handle
 MAX_SCORE = 200
 
 
-URL = 'http://www.bcorporation.net/community/find-a-b-corp'
+CAMPAIGN_URL = 'http://www.bcorporation.net/'
+DIRECTORY_URL = 'http://www.bcorporation.net/community/find-a-b-corp'
 
+# from http://www.bcorporation.net/what-are-b-corps/why-b-corps-matter
+GOAL = 'Redefine success in business'
+AUTHOR = 'B Labs'
+CAMPAIGN = 'B Corporation List'
 
 log = logging.getLogger(__name__)
 
 
 def scrape_campaign():
-    # TODO: add campaign document
+    soup = BeautifulSoup(scraperwiki.scrape(DIRECTORY_URL))
 
-    for record in scrape_directory(URL):
-        yield record
+    c = {
+        'campaign': CAMPAIGN,
+        'url': CAMPAIGN_URL,
+        'goal': GOAL,
+        'author': AUTHOR,
+    }
 
+    c['copyright'] = scrape_copyright(soup)
+    c['facebook_url'] = scrape_facebook_url(soup)
+    c['twitter_handle'] = scrape_twitter_handle(soup)
 
-def scrape_directory(url):
-    soup = BeautifulSoup(scraperwiki.scrape(url))
+    yield 'campaign', c
 
     select = soup.find('select', id='edit-field-industry')
 
@@ -51,7 +63,7 @@ def scrape_directory(url):
         industry = option.get('value')
         if industry:
             industry_url = '{}?{}={}'.format(
-                url, select['name'], quote_plus(industry))
+                DIRECTORY_URL, select['name'], quote_plus(industry))
 
             for record in scrape_industry(industry_url, industry):
                 yield record
