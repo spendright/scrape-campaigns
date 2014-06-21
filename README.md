@@ -18,6 +18,7 @@ more than research, journalism, etc.
 
 Here is the status of the campaigns we scrape:
 
+ * b_corp: The entire list of [Certified B Corporations](http://www.bcorporation.net/). Their [terms of use](http://www.bcorporation.net/terms-of-use) are restrictive, but in practice they're happy to let people use their data and spread the word (talked to them on the phone).
  * bang_accord: [Signatories of the Accord on Fire and Building Safety In
    Bangladesh](http://www.bangladeshaccord.org/signatories/). No explicit
    permission, but you probably don't need it; these are just facts.
@@ -37,7 +38,7 @@ Here is the status of the campaigns we scrape:
    a response within a week).
  * hope4congo: [RAISE Hope for Congo's Conflict Minerals Company Rankings](http://www.raisehopeforcongo.org/content/conflict-minerals-company-rankings). They have a scary-sounding but actually very liberal [reuse policy](http://www.raisehopeforcongo.org/content/reuse-policy) that even allows commercial reuse. Just make sure to link back to their website and include this text: *This material \[article\] was created by RAISE Hope for Congo, a campaign of the Enough Project*
  * hrc: The [Human Rights Campaign's Buyer's Guide'](http://www.hrc.org/apps/buyersguide/). No explicit policy on the website. Tried to contact them through
-   their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. *If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!*
+   their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. **If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!**
 
 If all else fails, go with
 common sense. Most of these organizations are more interested in changing
