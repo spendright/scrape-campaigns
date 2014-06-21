@@ -14,13 +14,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 from os import environ
+from time import sleep
 from urllib import quote_plus
 from urllib2 import HTTPError
 from urlparse import urljoin
 import logging
 
-import scraperwiki
 from bs4 import BeautifulSoup
+from mechanize import Browser
 
 from scraper import scrape_copyright
 from scraper import scrape_facebook_url
@@ -40,9 +41,19 @@ CAMPAIGN = 'B Corporation List'
 
 log = logging.getLogger(__name__)
 
+BROWSER = Browser()
+CRAWL_DELAY = 10  # mechanize doesn't read this from robots.txt
+
+
+def fetch_url(url):
+    """Fetch from URL with mechanize, add 10 seconds crawl delay"""
+    html = BROWSER.open(url).read()
+    sleep(CRAWL_DELAY)
+    return html
+
 
 def scrape_campaign():
-    soup = BeautifulSoup(scraperwiki.scrape(DIRECTORY_URL))
+    soup = BeautifulSoup(fetch_url(DIRECTORY_URL))
 
     c = {
         'campaign': CAMPAIGN,
@@ -81,7 +92,7 @@ def scrape_industry(url, industry):
     while True:
         log.info('Page {:d} of {}'.format(page_num, industry))
 
-        soup = BeautifulSoup(scraperwiki.scrape(url))
+        soup = BeautifulSoup(fetch_url(url))
 
         for a in soup.select('h6.field-content a'):
             for record in do_corp(urljoin(url, a['href']), industry):
@@ -106,7 +117,7 @@ def do_corp(url, industry):
     log.info('Business page: {}'.format(biz_id))
 
     try:
-        html = scraperwiki.scrape(url)
+        html = fetch_url(url)
     except HTTPError as e:
         if 'infinite loop' in e.msg:
             log.warn('infinite loop when fetching {}'.format(url))
@@ -114,7 +125,7 @@ def do_corp(url, industry):
         else:
             raise
 
-    soup = BeautifulSoup(scraperwiki.scrape(url))
+    soup = BeautifulSoup(html)
 
     c = {}
     # just being in the directory gets you a good judgment
