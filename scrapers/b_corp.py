@@ -13,6 +13,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from urllib import quote_plus
 from urllib2 import HTTPError
 from urlparse import urljoin
 import logging
@@ -40,17 +41,31 @@ def scrape_campaign():
         yield record
 
 
-def scrape_directory(start_url):
-    url = start_url
+def scrape_directory(url):
+    soup = BeautifulSoup(scraperwiki.scrape(url))
+
+    select = soup.find('select', id='edit-field-industry')
+
+    for option in select.select('option'):
+        industry = option.get('value')
+        if industry:
+            industry_url = '{}?{}={}'.format(
+                url, select['name'], quote_plus(industry))
+
+            for record in scrape_industry(industry_url, industry):
+                yield record
+
+
+def scrape_industry(url, industry):
     page_num = 1
 
     while True:
-        log.info('Directory page {:d}'.format(page_num))
+        log.info('Page {:d} of {}'.format(page_num, industry))
 
         soup = BeautifulSoup(scraperwiki.scrape(url))
 
         for a in soup.select('h6.field-content a'):
-            for record in do_corp(urljoin(url, a['href'])):
+            for record in do_corp(urljoin(url, a['href']), industry):
                 yield record
 
         next_a = soup.find('a', text=u'next ›')
@@ -61,7 +76,7 @@ def scrape_directory(start_url):
         page_num += 1
 
 
-def do_corp(url):
+def do_corp(url, industry):
     log.info('Business page: {}'.format(url.split('/')[-1]))
 
     try:
@@ -80,6 +95,9 @@ def do_corp(url):
     r = {'judgment': 1, 'company': c, 'url': url}
 
     c['company'] = soup.select('h1#page-title')[0].text
+    c['categories'] = [industry]
+
+    # TODO: scrape category description off page
 
     # social media
     left_col = soup.select('.two-col.last')[0]
@@ -95,5 +113,8 @@ def do_corp(url):
     # TODO: add logo
     # TODO: add category description
     # TODO: add score out of 200
+
+    # TODO: add store_url
+    # (e.g. on http://www.bcorporation.net/community/one-village-coffee-llc)
 
     yield 'company_rating', r
