@@ -312,7 +312,7 @@ def scrape_twitter_handle(soup, required=True):
             if m.group(1) == 'share':
                 continue
 
-            handle = '@' + m.group(1)
+            handle = '@' + m.group(2)
             # use capitalization of handle in text, if aviailable
             if a.text and a.text.strip().lower() == handle.lower():
                 handle = a.text.strip()
