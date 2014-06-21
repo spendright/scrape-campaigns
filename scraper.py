@@ -73,14 +73,7 @@ def main():
         log.info('Launching scraper: {}'.format(campaign))
         try:
             scraper = load_scraper(campaign)
-
-            records = []
-            for record in scraper.scrape_campaign():
-                log.debug(repr(record))
-                records.append(record)
-
-            clear_campaign(campaign)
-            save_records(campaign, records)
+            save_records(campaign, scraper.scrape_campaign())
         except:
             failed = True
             print_exc()
@@ -250,13 +243,18 @@ def save_records(campaign, records):
 
         # strip strings before storing them
         for k in record:
-            if isinstance(record[k], basestring):
+            if k is None:
+                del record[k]
+            elif isinstance(record[k], basestring):
                 record[k] = record[k].strip()
 
         for k in key_fields:
             if k not in record:
                 record[k] = ''
+
         key = tuple(record[k] for k in key_fields)
+
+        log.debug('`{}` {}: {}'.format(table, repr(key), repr(record)))
 
         if key in table_to_key_to_row[table]:
             merge(record, table_to_key_to_row[table][key])
@@ -265,6 +263,8 @@ def save_records(campaign, records):
 
     for record_type, record in records:
         handle(record_type, record)
+
+    clear_campaign(campaign)
 
     for table in table_to_key_to_row:
         key_fields = TABLE_TO_KEY_FIELDS[table]

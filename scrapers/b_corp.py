@@ -13,6 +13,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from os import environ
 from urllib import quote_plus
 from urllib2 import HTTPError
 from urlparse import urljoin
@@ -57,6 +58,12 @@ def scrape_directory(url):
 
 
 def scrape_industry(url, industry):
+    # whitelist of industries
+    if 'MORPH_B_CORP_INDUSTRIES' in environ:
+        # some industries have commas, so use ;
+        if industry not in environ['MORPH_B_CORP_INDUSTRIES'].split(';'):
+            return
+
     page_num = 1
 
     while True:
@@ -77,7 +84,14 @@ def scrape_industry(url, industry):
 
 
 def do_corp(url, industry):
-    log.info('Business page: {}'.format(url.split('/')[-1]))
+    biz_id = url.split('/')[-1]
+
+    # whitelist of businesses
+    if 'MORPH_B_CORP_BIZ_IDS' in environ:
+        if biz_id not in environ['MORPH_B_CORP_BIZ_IDS'].split(','):
+            return
+
+    log.info('Business page: {}'.format(biz_id))
 
     try:
         html = scraperwiki.scrape(url)
@@ -94,10 +108,16 @@ def do_corp(url, industry):
     # just being in the directory gets you a good judgment
     r = {'judgment': 1, 'company': c, 'url': url}
 
-    c['company'] = soup.select('h1#page-title')[0].text
-    c['categories'] = [industry]
+    # scrape score anyway
+    r['score'] = int(
+        soup.find('div', class_='field-name-field-overall-b-score').text)
+    r['max_score'] = MAX_SCORE
 
-    # TODO: scrape category description off page
+    c['company'] = soup.select('h1#page-title')[0].text
+
+    # use both industry and category on page (industry is more consistent)
+    c['categories'] = [industry]
+    c['categories'].append(soup.select('.company-desc-inner h3')[0].text)
 
     # social media
     left_col = soup.select('.two-col.last')[0]
@@ -107,14 +127,16 @@ def do_corp(url, industry):
     homepage_as = soup.select('.company-desc-inner a')
     if homepage_as:
         c['url'] = homepage_as[0]['href']
-    else:
-        import pdb; pdb.set_trace()
 
-    # TODO: add logo
-    # TODO: add category description
-    # TODO: add score out of 200
+    # logo not always available; e.g. on
+    # http://www.bcorporation.net/community/atayne-llc
+    logo_img = soup.find('img', class_='image-style-company-logo-full')
+    if logo_img:
+        c['logo_url'] = urljoin(url, logo_img['src'])
 
-    # TODO: add store_url
-    # (e.g. on http://www.bcorporation.net/community/one-village-coffee-llc)
+    # TODO: add store_url. This is in the lower-left box,
+    # but not consistently formatted. Examples:
+    # http://www.bcorporation.net/community/one-village-coffee-llc
+    # http://www.bcorporation.net/community/feelgoodz-llc
 
     yield 'company_rating', r
