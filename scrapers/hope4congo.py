@@ -28,7 +28,7 @@ URL = 'http://www.raisehopeforcongo.org/content/conflict-minerals-company-rankin
 # "it is critical to build up a clean minerals trade in Congo so that
 # miners can work in decent conditions, and the minerals can go toward
 # benefiting communities instead of warlords"
-GOAL = 'Help communities, not warlords'
+GOAL = 'Benefit communities, not warlords'
 
 
 CATEGORIES_RE = re.compile(r'.* products include (.*?)\.?\s*$')
