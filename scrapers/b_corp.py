@@ -128,13 +128,18 @@ def do_corp(url, industry):
     soup = BeautifulSoup(html)
 
     c = {}
+
     # just being in the directory gets you a good judgment
     r = {'judgment': 1, 'company': c, 'url': url}
 
     # scrape score anyway
-    r['score'] = int(
-        soup.find('div', class_='field-name-field-overall-b-score').text)
-    r['max_score'] = MAX_SCORE
+
+    # some pages don't have score (e.g.
+    # http://www.bcorporation.net/community/farm-capital-services-llc-0)
+    score_div = soup.find('div', class_='field-name-field-overall-b-score')
+    if score_div:
+        r['score'] = int(score_div.text)
+        r['max_score'] = MAX_SCORE
 
     c['company'] = soup.select('h1#page-title')[0].text
 
