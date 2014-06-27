@@ -63,9 +63,8 @@ def main():
 
     init_tables()
 
-    failed = False
+    failed = []
 
-    # Python campaigns
     for campaign in get_scraper_names():
         if campaigns and campaign not in campaigns:
             continue
@@ -75,10 +74,13 @@ def main():
             scraper = load_scraper(campaign)
             save_records(campaign, scraper.scrape_campaign())
         except:
-            failed = True
+            failed.append(campaign)
             print_exc()
 
-    sys.exit(int(failed))
+    # just calling exit(1) didn't register on morph.io
+    if failed:
+        raise Exception(
+            'failed to scrape campaigns: {}'.format(', '.join(failed)))
 
 
 def parse_args(args=None):
