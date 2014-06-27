@@ -18,7 +18,7 @@ more than research, journalism, etc.
 
 Here is the status of the campaigns we scrape:
 
- * b_corp: The entire list of [Certified B Corporations](http://www.bcorporation.net/). Their [terms of use](http://www.bcorporation.net/terms-of-use) are restrictive, but in practice they're happy to let people use their data and spread the word (talked to them on the phone).
+ * b_corp: The entire list of [Certified B Corporations](http://www.bcorporation.net/). Their [Terms of Use](http://www.bcorporation.net/terms-of-use) are horribly awful (they actually threaten to prosecute people who "illegally attempt to mine member data from the site"), but everyone I've actually *talked* to at B Labs has been friendly and supportive. As far as I've been able to gather, they just don't want people to somehow pull non-public data from the website. Just to be safe, I'd recommend getting writtem permission from them, as required in their Terms of Use (email thelab@bcorporation.net).
  * bang_accord: [Signatories of the Accord on Fire and Building Safety In
    Bangladesh](http://www.bangladeshaccord.org/signatories/). No explicit
    permission, but you probably don't need it; these are just facts.
