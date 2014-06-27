@@ -122,9 +122,10 @@ def do_corp(url, industry):
         if 'infinite loop' in e.msg:
             log.warn('infinite loop when fetching {}'.format(url))
             return
+        elif e.status == 403 and e.url != url:
+            log.warn('redirect to bad URL: {}'.format(url))
+            return
         else:
-            # TODO: handle redirects to pages that 403
-            # e.g. http://www.bcorporation.net/community/palmetto-ventures
             raise
 
     soup = BeautifulSoup(html)
