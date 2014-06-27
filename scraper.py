@@ -29,9 +29,12 @@ import sys
 from argparse import ArgumentParser
 from collections import defaultdict
 from decimal import Decimal
+from datetime import datetime
+from datetime import timedelta
 from os.path import dirname
 from os import environ
 from os import listdir
+from sqlite3 import OperationalError
 from traceback import print_exc
 
 import scraperwiki
@@ -50,6 +53,15 @@ dumptruck.PYTHON_SQLITE_TYPE_MAP.setdefault(Decimal, 'real')
 sqlite3.register_adapter(Decimal, str)
 
 
+ISO_8601_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+# scrape these campaigns no more often than this limit
+# morph.io scrapes nightly by default
+CAMPAIGN_SCRAPE_FREQUENCY = {
+    'rankabrand': timedelta(days=6.1),  # aim for weekly
+}
+
+
 def main():
     opts = parse_args()
 
@@ -63,11 +75,23 @@ def main():
 
     init_tables()
 
+    campaign_to_last_scraped = get_campaign_to_last_scraped()
+
     failed = []
 
     for campaign in get_scraper_names():
         if campaigns and campaign not in campaigns:
             continue
+
+        scrape_freq = CAMPAIGN_SCRAPE_FREQUENCY.get(campaign)
+        if scrape_freq:
+            last_scraped = campaign_to_last_scraped.get(campaign)
+            if last_scraped is not None:
+                time_since_scraped = datetime.utcnow() - last_scraped
+                if time_since_scraped < scrape_freq:
+                    log.info('Skipping scraper: {} (ran {} ago)'.format(
+                        campaign, time_since_scraped))
+                    continue
 
         log.info('Launching scraper: {}'.format(campaign))
         try:
@@ -87,6 +111,9 @@ def parse_args(args=None):
     parser = ArgumentParser()
     parser.add_argument('campaigns', metavar='N', nargs='*',
                         help='whitelist of campaigns to scrape')
+    parser.add_argument(
+        '-f', '--force', dest='force', default=False, action='store_true',
+        help='Ignore scrape frequency limit')
     parser.add_argument(
         '-v', '--verbose', dest='verbose', default=False, action='store_true',
         help='Enable debug logging')
@@ -134,13 +161,14 @@ RATING_FIELDS = [
 
 
 TABLE_TO_EXTRA_FIELDS = {
+    'campaign': [('last_scraped', 'TEXT')],
     'campaign_brand_rating': RATING_FIELDS,
     'campaing_company_rating': RATING_FIELDS,
 }
 
 
 def merge(src, dst):
-    """Merge src dictionary into dst."""
+    """Merge src dictionary into dst. Only overwrite blank values."""
     for k, v in src.iteritems():
         if v is not None and (v != '' or not dst.get(k)):
             dst[k] = v
@@ -266,6 +294,10 @@ def save_records(campaign, records):
     for record_type, record in records:
         handle(record_type, record)
 
+    # add the time this campaign was scraped
+    handle('campaign', {
+        'last_scraped': datetime.utcnow().strftime(ISO_8601_FMT)})
+
     clear_campaign(campaign)
 
     for table in table_to_key_to_row:
@@ -288,6 +320,20 @@ def load_scraper(name):
     module_name = 'scrapers.' + name
     __import__(module_name)
     return sys.modules[module_name]
+
+
+def get_campaign_to_last_scraped():
+    try:
+        return {
+            campaign_id: datetime.strptime(last_scraped, ISO_8601_FMT)
+            for campaign_id, last_scraped in scraperwiki.sql.execute(
+                'SELECT campaign_id, last_scraped FROM campaign')['data']
+            if last_scraped
+        }
+    except OperationalError as e:
+        if 'no such column' in e.message:
+            return {}
+        raise
 
 
 # UTILITY CODE FOR SCRAPERS
