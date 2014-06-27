@@ -18,6 +18,7 @@ more than research, journalism, etc.
 
 Here is the status of the campaigns we scrape:
 
+ * b_corp: The entire list of [Certified B Corporations](http://www.bcorporation.net/). Their [terms of use](http://www.bcorporation.net/terms-of-use) are restrictive, but in practice they're happy to let people use their data and spread the word (talked to them on the phone).
  * bang_accord: [Signatories of the Accord on Fire and Building Safety In
    Bangladesh](http://www.bangladeshaccord.org/signatories/). No explicit
    permission, but you probably don't need it; these are just facts.
