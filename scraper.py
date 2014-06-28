@@ -227,6 +227,12 @@ def save_records(campaign, records):
             handle('company', record['company'])
             record['company'] = record['company']['company']
 
+        # allow company to be a dict with company info
+        if 'brand' in record and isinstance(record['brand'], dict):
+            handle('brand', record['brand'])
+            record['company'] = record['brand'].get('company', '')
+            record['brand'] = record['brand']['brand']
+
         company = record.get('company', '')
 
         # allow list of brands, which can be dicts
@@ -348,7 +354,7 @@ def scrape_copyright(soup, required=True):
         raise ValueError('Copyright notice not found!')
 
 
-TWITTER_URL_RE = re.compile(r'^http://(www\.)?twitter\.com/(\w+)/?$', re.I)
+TWITTER_URL_RE = re.compile(r'^https?://(www\.)?twitter\.com/(\w+)/?$', re.I)
 
 
 def scrape_twitter_handle(soup, required=True):
@@ -372,13 +378,16 @@ def scrape_twitter_handle(soup, required=True):
 
 
 FACEBOOK_URL_RE = re.compile(
-    r'^http://(www\.)facebook\.com/(([\w-]+)|pages/[\w-]+/\d+)/?$', re.I)
+    r'^https?://(www\.)facebook\.com/(([\w-]+)|pages/[\w-]+/\d+)/?$', re.I)
 
 def scrape_facebook_url(soup, required=True):
     """Find twitter handle on page."""
     for a in soup.findAll('a'):
         url = a.get('href')
         if url and FACEBOOK_URL_RE.match(url):
+            # normalize url scheme; Facebook now uses HTTPS
+            if url.startswith('http://'):
+                url = 'https://' + url[7:]
             return url
 
     if required:
