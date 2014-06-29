@@ -117,6 +117,6 @@ def scrape_campaign_from_landing():
     # there isn't a copyright notice on the page!
     c['donate_url'] = soup.find('a', text='Support us')['href']
     c['facebook_url'] = scrape_facebook_url(soup)
-    c['twitter_url'] = scrape_twitter_handle(soup)
+    c['twitter_handle'] = scrape_twitter_handle(soup)
 
     return c
