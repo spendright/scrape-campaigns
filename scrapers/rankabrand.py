@@ -13,6 +13,7 @@
 #   limitations under the License.
 import json
 import logging
+from urlparse import urljoin
 
 import scraperwiki
 from bs4 import BeautifulSoup
@@ -115,7 +116,8 @@ def scrape_campaign_from_landing():
     c['url'] = LANDING_URL
 
     # there isn't a copyright notice on the page!
-    c['donate_url'] = soup.find('a', text='Support us')['href']
+    c['donate_url'] = urljoin(LANDING_URL,
+                              soup.find('a', text='Support us')['href'])
     c['facebook_url'] = scrape_facebook_url(soup)
     c['twitter_handle'] = scrape_twitter_handle(soup)
 
