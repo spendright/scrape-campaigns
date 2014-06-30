@@ -18,6 +18,7 @@ from urlparse import urljoin
 import scraperwiki
 from bs4 import BeautifulSoup
 
+from scraper import grade_to_judgment
 from scraper import scrape_facebook_url
 from scraper import scrape_twitter_handle
 
@@ -78,8 +79,6 @@ def scrape_sectors():
 
 
 def scrape_brands(sector_id):
-    brand_to_name = {}
-
     brands_json = json.loads(scraperwiki.scrape(
         BRANDS_URL_FMT.format(API_KEY, sector_id)))
 
@@ -99,10 +98,13 @@ def scrape_brand_rating(brand_id):
     b['categories'] = [j['sector']] + (j['categories'] or [])
     b['logo_url'] = j['logo']
 
-    # TODO: infer grade, judgment
+    r['url'] = j['url']
+
     r['score'] = int(j['score'])
     r['max_score'] = int(j['score_total'])
-    r['url'] = j['url']
+
+    r['grade'] = score_to_grade(r['score'], r['max_score'])
+    r['judgment'] = grade_to_judgment(r['grade'])
 
     return r
 
@@ -122,3 +124,23 @@ def scrape_campaign_from_landing():
     c['twitter_handle'] = scrape_twitter_handle(soup)
 
     return c
+
+
+def score_to_grade(score, max_score):
+    percent = 100 * score / max_score
+
+    # grades are assigned based on percentage ratings; see:
+    # http://rankabrand.org/home/How-we-work
+    #
+    # The round up; for example, a 35% earns a C, not a D. See:
+    # http://rankabrand.org/beer-brands/Heineken (7 out of 20)
+    if percent >= 75:
+        return 'A'
+    elif percent >= 55:
+        return 'B'
+    elif percent >= 35:
+        return 'C'
+    elif percent >= 15:
+        return 'D'
+    else:
+        return 'E'  # not F

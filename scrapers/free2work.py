@@ -20,6 +20,8 @@ import scraperwiki
 import re
 from bs4 import BeautifulSoup
 
+from scraper import grade_to_judgment
+
 API_TOKEN = '7baaa18a777fc27287ad5898750cfe09'
 
 CAMPAIGN_URL = 'http://www.free2work.org/'
@@ -132,13 +134,6 @@ REPORT_YEARS = [
 ]
 
 log = logging.getLogger(__name__)
-
-
-def grade_to_judgment(grade):
-    """Convert a letter grade (e.g. "B+") to a judgment (1 for A or B,
-    0 for C, -1 for D or F)
-    """
-    return cmp('C', grade[0])
 
 
 def scrape_rating(rating_id):
