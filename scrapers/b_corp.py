@@ -122,7 +122,7 @@ def do_corp(url, industry):
         if 'infinite loop' in e.msg:
             log.warn('infinite loop when fetching {}'.format(url))
             return
-        elif e.code == 403 and e.url != url:
+        elif e.code == 403 and e.geturl() != url:
             log.warn('redirect to bad URL: {}'.format(url))
             return
         else:
