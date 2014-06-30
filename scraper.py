@@ -81,18 +81,21 @@ def main():
     failed = []
 
     for campaign in get_scraper_names():
-        if campaigns and campaign not in campaigns:
-            continue
-
-        scrape_freq = CAMPAIGN_SCRAPE_FREQUENCY.get(campaign)
-        if scrape_freq:
-            last_scraped = campaign_to_last_scraped.get(campaign)
-            if last_scraped is not None:
-                time_since_scraped = datetime.utcnow() - last_scraped
-                if time_since_scraped < scrape_freq:
-                    log.info('Skipping scraper: {} (ran {} ago)'.format(
-                        campaign, time_since_scraped))
-                    continue
+        if campaigns:
+            if campaign not in campaigns:
+                continue
+        else:
+            # if no whitelist, just scrape campaigns that haven't
+            # been scraped recently
+            scrape_freq = CAMPAIGN_SCRAPE_FREQUENCY.get(campaign)
+            if scrape_freq:
+                last_scraped = campaign_to_last_scraped.get(campaign)
+                if last_scraped is not None:
+                    time_since_scraped = datetime.utcnow() - last_scraped
+                    if time_since_scraped < scrape_freq:
+                        log.info('Skipping scraper: {} (ran {} ago)'.format(
+                            campaign, time_since_scraped))
+                        continue
 
         log.info('Launching scraper: {}'.format(campaign))
         try:
@@ -112,9 +115,6 @@ def parse_args(args=None):
     parser = ArgumentParser()
     parser.add_argument('campaigns', metavar='N', nargs='*',
                         help='whitelist of campaigns to scrape')
-    parser.add_argument(
-        '-f', '--force', dest='force', default=False, action='store_true',
-        help='Ignore scrape frequency limit')
     parser.add_argument(
         '-v', '--verbose', dest='verbose', default=False, action='store_true',
         help='Enable debug logging')
