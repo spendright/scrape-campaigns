@@ -36,6 +36,7 @@ from os import environ
 from os import listdir
 from sqlite3 import OperationalError
 from traceback import print_exc
+from urlparse import urlparse
 
 import scraperwiki
 
@@ -283,6 +284,13 @@ def save_records(campaign, records):
                 del record[k]
             elif isinstance(record[k], basestring):
                 record[k] = record[k].strip()
+
+        # verify that URLs are absolute
+        for k in record:
+            if k.split('_')[-1] == 'url':
+                if record[k] and not urlparse(record[k]).scheme:
+                    raise ValueError('{} has no scheme: {}'.format(
+                        k, repr(record)))
 
         for k in key_fields:
             if k not in record:
