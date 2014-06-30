@@ -39,13 +39,19 @@ Here is the status of the campaigns we scrape:
  * hope4congo: [RAISE Hope for Congo's Conflict Minerals Company Rankings](http://www.raisehopeforcongo.org/content/conflict-minerals-company-rankings). They have a scary-sounding but actually very liberal [reuse policy](http://www.raisehopeforcongo.org/content/reuse-policy) that even allows commercial reuse. Just make sure to link back to their website and include this text: *This material \[article\] was created by RAISE Hope for Congo, a campaign of the Enough Project*
  * hrc: The [Human Rights Campaign's Buyer's Guide'](http://www.hrc.org/apps/buyersguide/). No explicit policy on the website. Tried to contact them through
    their [Buyer's Guide's feedback form](http://www.hrc.org/apps/buyersguide/send-feedback.php) to no avail. **If you have an email or phone number for the people who work on the Buyer's Guide, please pass it along!**
+ * rankabrand: [Rank a Brand](http://rankabrand.org). No explicit policy, but
+ got a positive, friendly response by email. [wegreen](http://wegreen.de) and
+ [Ethical Barcode](http://ethicalbarcode.com/) also use their data. Probably
+ a good idea to shoot them an email at contact@rankabrand.com. They respond
+ quickly.
 
 If all else fails, go with
 common sense. Most of these organizations are more interested in changing
 the world that exercising their intellectual property rights. Be polite:
 
  * Give the organization credit and link back to them.
- * Preserve the correctness and completeness of the campaign data.
+ * Preserve the integrity of the original data; don't censor it or
+   interject your own opinions.
  * Don't use it to frustrate the organization's intent (e.g. using the
    HRC Buyer's Guide to support companies that discriminate against LGBT
    employees).
@@ -86,10 +92,10 @@ Here are some of the fields used in these tables:
  * date: The date a rating was published. This is in ISO format (YYYY-MM-DD), though in some cases we omit the day or even the month. A string, not a number!
  * goal: VERY compact description of campaign's goal. Five words max.
  * scope: Used to limit a rating to a particular subset of products (e.g. "Fair Trade"). You can have multiple ratings of the same brand/company with different scopes.
- * url: The canonical URL for a campaign, company, etc. Other "*_url" fields are pretty common, for example "donate_url".
+ * url: The canonical URL for a campaign, company, etc. Other `\*_url` fields are pretty common, for example `donate_url`.
 
-Scrapers are allowed to add other fields as needed (e.g. twitter_handle,
-feedback_url).
+Scrapers are allowed to add other fields as needed (e.g. `twitter_handle`,
+`feedback_url`).
 
 Some fields used specifically for scoring:
 
@@ -158,8 +164,10 @@ their `twitter_handle`).
 Translating a campaign's ratings into a `judgment` is sometimes (ahem) a
 judgment call, but it's usually obvious. Mapping green to 1, yellow to 0, and
 red to -1 is a pretty safe bet, as is (for grades) mapping A and B to 1,
-C to 0, and D through F to -1. Sometimes the campaign is just a list of things
+C to 0, and D through F to -1 (`scraper.grade_to_judgment()` does exactly
+that). Sometimes the campaign is just a list of things
 to support or avoid, in which case you should use the same judgment throughout.
+
 If you're not sure, ask the campaign's creator.
 
 Once you're done, submit a pull request on GitHub.
