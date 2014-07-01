@@ -38,12 +38,6 @@ BRANDS_URL_FMT = 'http://rankabrand.org/api/{}/en/brands/sector/{}'
 BRAND_URL_FMT = 'http://rankabrand.org/api/{}/en/brand/brand/{}'
 
 
-
-CAMPAIGN = {
-    'campaign': 'Rank a Brand',
-    'goal': 'Buy sustainable',
-}
-
 log = logging.getLogger(__name__)
 
 
@@ -115,6 +109,7 @@ def scrape_campaign_from_landing():
     c = {}
 
     c['goal'], c['campaign'] = soup.title.text.split('|')[-2:]
+    c['goal'] = c['goal'].capitalize()  # for consistency
     c['url'] = LANDING_URL
 
     # there isn't a copyright notice on the page!
