@@ -370,8 +370,9 @@ def scrape_twitter_handle(soup, required=True):
     for a in soup.findAll('a'):
         m = TWITTER_URL_RE.match(a.get('href', ''))
         if m:
+            import pdb; pdb.set_trace()
             # "share" isn't a twitter handle
-            if m.group(1) == 'share':
+            if m.group(2) == 'share':
                 continue
 
             handle = '@' + m.group(2)
