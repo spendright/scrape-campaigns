@@ -30,6 +30,8 @@ CAMPAIGN = {
     'url': URL,
 }
 
+CATEGORY = 'Apparel'  # every company is in this category
+
 log = logging.getLogger(__name__)
 
 
@@ -75,7 +77,8 @@ def scrape_signatories_page(signatories_url):
         # each subsequent country
         for b in col.findAll('b'):
             for company in _scrape_companies_from_b(b):
-                yield 'company_rating', {'company': company, 'judgment': 1}
+                yield 'company_rating', {'company': company, 'judgment': 1,
+                                         'categories': [CATEGORY]}
 
 
 def _scrape_companies_from_b(b):

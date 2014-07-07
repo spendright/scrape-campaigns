@@ -42,6 +42,9 @@ RANK_CLASS_TO_JUDGMENT = {
     'rank_0': -1,
 }
 
+# all companies are in this category
+CATEGORY = 'Electronics'
+
 
 def scrape_campaign():
     soup = BeautifulSoup(scraperwiki.scrape(URL))
@@ -90,5 +93,7 @@ def scrape_campaign():
 
         r['score'] = int(INT_RE.search(
             div.select('div.col_score')[0].text).group())
+
+        r['categories'] = [CATEGORY]
 
         yield 'company_rating', r

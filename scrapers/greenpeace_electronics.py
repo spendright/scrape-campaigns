@@ -45,6 +45,9 @@ HEADER_RE = re.compile(r'^(.*)\s+(\d+\.\d)/(\d+)$')
 IMG_RE = re.compile(r'^#(\d+)')
 REPORT_CARD_RE = re.compile(r'^Download\s+(.*)\s+report\s+card*$')
 
+# These are all Electronics companies
+CATEGORY = 'Electronics'
+
 
 def score_to_judgment(score):
     if score <= MAX_FOR_AVOID:
@@ -100,4 +103,5 @@ def scrape_campaign():
             'rank': rank,
             'num_ranked': num_ranked,
             'judgment': judgment,
+            'categories': [CATEGORY],
         }
