@@ -87,8 +87,8 @@ def _scrape_companies_from_b(b):
         if isinstance(element, basestring):
             company = element.strip()
             if company:
-                yield dict(company=company, country=country)
+                yield dict(company=company, hq_country=country)
         elif element.name == 'a':
             yield dict(company=element.text.strip(),
-                       country=country,
+                       hq_country=country,
                        url=element['href'])

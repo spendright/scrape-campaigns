@@ -1,2 +1,1 @@
 - free2work: fix (RAC) etc. in company name
-- use hq_country, hq_location fields
