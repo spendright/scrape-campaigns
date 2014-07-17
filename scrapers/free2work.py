@@ -69,6 +69,7 @@ SUFFIXES = {
     ' (General)': {'scope': 'Non-Certified'},
     ' (Non-Certified)': {'scope': 'Non-Certified'},
     ' (Rainforest Alliance)': {'scope': 'Rainforest Alliance Certified'},
+    ' (RAC)': {'scope': 'Rainforest Alliance Certified'},
     ' (UTZ)': {'scope': 'UTZ Certified'},
     ' (Whole Trade Guarantee)': {'scope': 'Whole Trade Guarantee'},
     ' (preliminary update)': {},
