@@ -64,12 +64,13 @@ CAMPAIGN = {
 # name and assesment scope field may have a suffix that indicates scope
 # information, or is useless
 SUFFIXES = {
+    ' (FLO)': {'scope': 'Fair Trade'},
     ' (Fair Trade)': {'scope': 'Fair Trade'},
     ' (Fairtrade)': {'scope': 'Fair Trade'},
     ' (General)': {'scope': 'Non-Certified'},
     ' (Non-Certified)': {'scope': 'Non-Certified'},
-    ' (Rainforest Alliance)': {'scope': 'Rainforest Alliance Certified'},
     ' (RAC)': {'scope': 'Rainforest Alliance Certified'},
+    ' (Rainforest Alliance)': {'scope': 'Rainforest Alliance Certified'},
     ' (UTZ)': {'scope': 'UTZ Certified'},
     ' (Whole Trade Guarantee)': {'scope': 'Whole Trade Guarantee'},
     ' (preliminary update)': {},
