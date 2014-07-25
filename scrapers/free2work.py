@@ -106,6 +106,7 @@ COMPANY_CORRECTIONS = {
     'Allegro Coffee Beverage': 'Allegro Coffee',
     'Amazon Kindle': 'Amazon.com',
     'Woolworths apparel and electronics': 'Woolworths Limited',
+    'Royal Phillips': 'Royal Philips',
 }
 
 
