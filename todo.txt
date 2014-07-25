@@ -1,0 +1,8 @@
+- figure out better when free2work intends to rate entire companies rather
+  than just brands within them (this is probably true for everything except
+  coffee)
+- special-case scope restriction (apparel and electronics) on Woolworths
+  Limited rather than just treating it as a correction
+  - for bonus points, note that AWA and Abode are electronics brands anyway
+- special-case Amazon Kindle (which is listed as a "company", but is
+  actually a brand of Amazon.com)
