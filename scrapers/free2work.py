@@ -88,6 +88,9 @@ SUFFIXES = {
     # on Darn Tough, clear from company name
     # http://widgets.free2work.org/frontend_ratings/public_view/1081
     ' (Australia)': {},
+    # On Divine 2
+    # http://widgets.free2work.org/frontend_ratings/public_view/440
+    '- resave old version': {},
 }
 
 
@@ -100,6 +103,8 @@ SCOPES = {
 
 
 COMPANY_CORRECTIONS = {
+    'Allegro Coffee Beverage': 'Allegro Coffee',
+    'Amazon Kindle': 'Amazon.com',
     'Woolworths apparel and electronics': 'Woolworths Limited',
 }
 
