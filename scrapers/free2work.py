@@ -94,7 +94,7 @@ SUFFIXES = {
 }
 
 
-SCOPES = {
+SCOPE_CORRECTIONS = {
     'All': None,
     'Fairtrade Products': 'Fair Trade',
     'Fairtrade': 'Fair Trade',
@@ -177,7 +177,8 @@ def scrape_rating(rating_id):
     # fix dangling comma on "Woolworths manufactured apparel,"
     scope = scope.rstrip(',')
     if scope and scope != brand:  # Amazon Kindle's scope is "Amazon Kindle"
-        d['scope'] = SCOPES.get(scope) or scope
+        # don't use "get(scope) or scope" so we can correct to None
+        d['scope'] = SCOPE_CORRECTIONS.get(scope, scope)
 
     # handle "Rating based on assessment of" field
     company = scope_tds[1].text.strip()
@@ -194,7 +195,7 @@ def scrape_rating(rating_id):
             company = company[:-len(suffix)]
             d.update(SUFFIXES[suffix])
             break
-    d['company'] = COMPANY_CORRECTIONS.get(company) or company
+    d['company'] = COMPANY_CORRECTIONS.get(company, company)
 
     # handle "Industries" field
     categories = scope_tds[2].text.strip()
