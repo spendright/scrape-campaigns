@@ -293,7 +293,7 @@ def save_records(campaign, records):
                         k, repr(record)))
 
         for k in key_fields:
-            if k not in record:
+            if record.get(k) is None:
                 record[k] = ''
 
         key = tuple(record[k] for k in key_fields)
