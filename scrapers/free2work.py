@@ -95,18 +95,44 @@ SUFFIXES = {
 
 
 SCOPE_CORRECTIONS = {
-    'All': None,
-    'Fairtrade Products': 'Fair Trade',
-    'Fairtrade': 'Fair Trade',
-    'Rainforest Alliance': 'Rainforest Alliance Certified',
+    'All': {'scope': None},
+    'All Kogan-branded products': {
+        'scope': None, 'rating_brands': ['Kogan'],
+    },
+    'Ethical Clothing Australia accredited lines':
+        {'scope': 'Ethical Clothing Australia Accredited'},
+    'Fairtrade Products': {'scope': 'Fair Trade'},
+    'Fairtrade': {'scope': 'Fair Trade'},
+    'Milana, St James, Alta Linea, Triplite, Agenda, David Jones': {
+        'scope': None,
+        'rating_brands': ['Milana', 'St James', 'Alta Linea', 'Triplite',
+                          'Agenda', 'David Jones'],
+    },
+    'Myer house branded products only': {
+        'scope': None,
+        'rating_brands': ['Myer'],
+    },
+    'Rainforest Alliance': {'scope': 'Rainforest Alliance Certified'},
 }
 
 
 COMPANY_CORRECTIONS = {
-    'Allegro Coffee Beverage': 'Allegro Coffee',
-    'Amazon Kindle': 'Amazon.com',
-    'Woolworths apparel and electronics': 'Woolworths Limited',
-    'Royal Phillips': 'Royal Philips',
+    'Allegro Coffee Beverage': {
+        'company': 'Allegro Coffee'
+    },
+    'Amazon Kindle': {
+        'company': 'Amazon.com',
+        'rating_brands': ['Amazon Kindle'],
+        'scope': None,
+    },
+    'Woolworths apparel and electronics': {
+        'company': 'Woolworths Australia',
+        'brand': 'Woolworths',
+        'scope': 'apparel and electronics',
+    },
+    'Royal Phillips': {
+        'company': 'Royal Philips',
+    },
 }
 
 
@@ -144,7 +170,7 @@ REPORT_YEARS = [
 log = logging.getLogger(__name__)
 
 
-def scrape_rating(rating_id):
+def scrape_rating_page(rating_id):
     url = RATINGS_URL + str(rating_id)
     soup = BeautifulSoup(scraperwiki.scrape(url), from_encoding='utf-8')
 
@@ -176,9 +202,11 @@ def scrape_rating(rating_id):
     scope = scope_tds[0].text.strip()
     # fix dangling comma on "Woolworths manufactured apparel,"
     scope = scope.rstrip(',')
-    if scope and scope != brand:  # Amazon Kindle's scope is "Amazon Kindle"
-        # don't use "get(scope) or scope" so we can correct to None
-        d['scope'] = SCOPE_CORRECTIONS.get(scope, scope)
+
+    if scope in SCOPE_CORRECTIONS:
+        d.update(SCOPE_CORRECTIONS[scope])
+    elif scope:
+        d['scope'] = scope
 
     # handle "Rating based on assessment of" field
     company = scope_tds[1].text.strip()
@@ -195,7 +223,11 @@ def scrape_rating(rating_id):
             company = company[:-len(suffix)]
             d.update(SUFFIXES[suffix])
             break
-    d['company'] = COMPANY_CORRECTIONS.get(company, company)
+
+    if company in COMPANY_CORRECTIONS:
+        d.update(COMPANY_CORRECTIONS['company'])
+    else:
+        d['company'] = company
 
     # handle "Industries" field
     categories = scope_tds[2].text.strip()
@@ -220,7 +252,16 @@ def scrape_rating(rating_id):
     # convert to judgment
     d['judgment'] = grade_to_judgment(d['grade'])
 
-    return d
+    if 'rating_brands' in d:
+        rating_brands = d.pop('rating_brands')
+        for rating_brand in rating_brands:
+            rating = d.copy()
+            rating['brand'] = rating_brand
+            yield 'brand_rating', rating
+    else:
+        if 'brand' in d:
+            d['brands'] = [d.pop('brand')]
+        yield 'company_rating', d
 
 
 def to_iso_date(dt):
@@ -285,6 +326,5 @@ def scrape_campaign():
         if rating_id in DUPLICATE_RATINGS:
             continue
 
-        # Free2Work's ratings mostly apply to companies, but only in certain
-        # product categories. Using brands to play it safe.
-        yield 'brand_rating', scrape_rating(rating_id)
+        for row_type, row in scrape_rating_page(rating_id):
+            yield row_type, row
