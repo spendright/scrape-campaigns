@@ -225,7 +225,7 @@ def scrape_rating_page(rating_id):
             break
 
     if company in COMPANY_CORRECTIONS:
-        d.update(COMPANY_CORRECTIONS['company'])
+        d.update(COMPANY_CORRECTIONS[company])
     else:
         d['company'] = company
 
