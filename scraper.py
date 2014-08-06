@@ -69,10 +69,13 @@ def main():
     level = logging.DEBUG if opts.verbose else logging.INFO
     logging.basicConfig(format='%(name)s: %(message)s', level=level)
 
-    if environ.get('MORPH_CAMPAIGNS'):
+    campaigns = opts.campaigns
+    if not campaigns and environ.get('MORPH_CAMPAIGNS'):
         campaigns = environ['MORPH_CAMPAIGNS'].split(',')
-    else:
-        campaigns = opts.campaigns
+
+    skip_campaigns = []
+    if environ.get('MORPH_SKIP_CAMPAIGNS'):
+        skip_campaigns = environ['MORPH_SKIP_CAMPAIGNS'].split(',')
 
     init_tables()
 
@@ -85,6 +88,10 @@ def main():
             if campaign not in campaigns:
                 continue
         else:
+            if campaign in skip_campaigns:
+                log.info('Skipping scraper: {}'.format(campaign))
+                continue
+
             # if no whitelist, just scrape campaigns that haven't
             # been scraped recently
             scrape_freq = CAMPAIGN_SCRAPE_FREQUENCY.get(campaign)
