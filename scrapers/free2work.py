@@ -230,6 +230,10 @@ def scrape_rating_page(rating_id):
         d['company'] = company
 
     # handle "Industries" field
+    #
+    # in cases where a company is rated, this seems to be attached to
+    # the company, not the specific brands, so it's okay to just
+    # add this to the rating (whether it's a company or brand rating)
     categories = scope_tds[2].text.strip()
     if categories:
         d['categories'] = [c.strip() for c in categories.split(',')]
