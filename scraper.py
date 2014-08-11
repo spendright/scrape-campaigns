@@ -202,21 +202,6 @@ def clear_campaign(campaign):
             'DELETE FROM {} WHERE campaign_id = ?'.format(table), [campaign])
 
 
-def guess_entity_name(record):
-    """Guess the name (brand, company, or campaign) of a record,
-    for logging."""
-    return (_guess_entity_name(record) or '').strip()
-
-
-def _guess_entity_name(record):
-    for key in 'brand', 'company', 'campaign':
-        if record.get(key):
-            if isinstance(record[key], dict):
-                return record[key].get(key)
-            else:
-                return record[key]
-
-
 def save_records(campaign, records):
     table_to_key_to_row = defaultdict(dict)
 
