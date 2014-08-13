@@ -130,8 +130,8 @@ COMPANY_CORRECTIONS = {
         'brand': 'Woolworths',
         'scope': 'apparel and electronics',
     },
-    'Royal Phillips': {
-        'company': 'Royal Philips',
+    'Royal Phillips NV': {  # too many Ls
+        'company': 'Royal Philips NV',
     },
 }
 
