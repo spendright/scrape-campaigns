@@ -51,7 +51,8 @@ def scrape_campaign():
             sector_id, ' > '.join(sector_cats)))
         for brand_id, brand_name in sorted(scrape_brands(sector_id).items()):
             log.info(u'Brand {}: {}'.format(brand_id, brand_name))
-            yield 'brand_rating', scrape_brand_rating(brand_id, sector_cats)
+            for record in scrape_brand(brand_id, sector_cats):
+                yield record
 
 
 def scrape_sectors():
@@ -81,7 +82,7 @@ def scrape_brands(sector_id):
     return {int(b['id']): b['brandname'] for b in brands_json}
 
 
-def scrape_brand_rating(brand_id, sector_cats):
+def scrape_brand(brand_id, sector_cats):
     b = {}
     r = {'brand': b}
 
@@ -90,8 +91,17 @@ def scrape_brand_rating(brand_id, sector_cats):
 
     b['brand'] = j['brandname']
     b['company'] = j['owner']
-    b['categories'] = sector_cats + (j['categories'] or [])
     b['logo_url'] = j['logo']
+    b['categories'] = sector_cats + (j['categories'] or [])
+
+    # handle category hierarchy
+    for i in xrange(len(sector_cats) - 1):
+        yield 'category', dict(parent_category=sector_cats[i],
+                               category=sector_cats[i + 1])
+    if sector_cats and j['categories']:
+        for cat in j['categories']:
+            yield 'category', dict(parent_category=sector_cats[-1],
+                                   category=cat)
 
     r['url'] = j['url']
 
@@ -101,7 +111,7 @@ def scrape_brand_rating(brand_id, sector_cats):
     r['grade'] = score_to_grade(r['score'], r['max_score'])
     r['judgment'] = grade_to_judgment(r['grade'])
 
-    return r
+    yield 'brand_rating', r
 
 
 def scrape_campaign_from_landing():

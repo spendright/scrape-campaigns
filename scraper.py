@@ -140,6 +140,8 @@ TABLE_TO_KEY_FIELDS = {
     'campaign_brand_category': ['company', 'brand', 'category'],
     # should you buy this brand?
     'campaign_brand_rating': ['company', 'brand', 'scope'],
+    # category hierarchy information
+    'campaign_category': ['category'],
     # factual information about a company (e.g. url, email, etc.)
     'campaign_company': ['company'],
     # factual information about which categories a company belongs to
@@ -240,6 +242,10 @@ def save_records(campaign, records):
         # note that brand is also used in the loop above
         brand = record.get('brand', '')
 
+        # allow single category
+        if 'category' in record and not table.endswith('_category'):
+            record['categories'] = [record.pop['category']]
+
         # allow list of categories (strings only)
         if 'categories' in record:
             if brand:
@@ -258,6 +264,10 @@ def save_records(campaign, records):
         # automatic brand entries
         if 'brand' in record and table != 'campaign_brand':
             handle('brand', dict(company=company, brand=brand))
+
+        # automatic category entries
+        if 'category' in record and table != 'campaign_category':
+            handle('category', dict(category=record['category']))
 
         # automatic company entries
         if 'company' in record and table != 'campaign_company':
