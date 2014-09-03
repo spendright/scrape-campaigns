@@ -92,8 +92,17 @@ def scrape_campaign():
         # TODO: scrape the website?
         # rating['url'] = DETAILS_URL_PATTERN.format(c['CompanyID'])
 
-        sector = c['Sector']
-        rating['categories'] = [SECTOR_CORRECTIONS.get(sector) or c['Sector']]
+        sector = SECTOR_CORRECTIONS.get(c['Sector']) or c['Sector']
+
+        if '--' in sector:  # Beverages--Beer
+            categories = sector.split('--')
+            for i in xrange(len(categories) - 1):
+                yield 'category', dict(parent_category=categories[i],
+                                       category=categories[i + 1])
+        else:
+            categories = [sector]
+
+        rating['categories'] = categories
 
         if c.get('Scores') and c['Scores'].get('Scores'):
             scores = c['Scores']['Scores'][-1]

@@ -268,6 +268,8 @@ def save_records(campaign, records):
         # automatic category entries
         if 'category' in record and table != 'campaign_category':
             handle('category', dict(category=record['category']))
+        if 'parent_category' in record:
+            handle('category', dict(category=record['parent_category']))
 
         # automatic company entries
         if 'company' in record and table != 'campaign_company':
