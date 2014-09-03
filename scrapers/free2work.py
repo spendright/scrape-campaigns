@@ -181,6 +181,12 @@ def scrape_rating_page(rating_id):
     brand = soup.select('.rating-name')[0].text.strip()
     log.info(u'Rating {}: {}'.format(rating_id, brand))
 
+    # get logo image
+    logo_url = None
+    brand_logo_img = soup.find('img', alt='brand logo')
+    if brand_logo_img and 'src' in brand_logo_img.attrs:
+        logo_url = brand_logo_img['src']
+
     for suffix in SUFFIXES:
         if brand.endswith(suffix):
             brand = brand[:-len(suffix)]
@@ -256,6 +262,16 @@ def scrape_rating_page(rating_id):
     # convert to judgment
     d['judgment'] = grade_to_judgment(d['grade'])
 
+    # attach logo_url to brand or company as appropriate
+    if logo_url:
+        if 'brand' in d and 'rating_brands' not in d:
+            yield 'brand', dict(
+                company=d['company'], brand=d['brand'], logo_url=logo_url)
+        else:
+            yield 'company', dict(
+                company=d['company'], logo_url=logo_url)
+
+    # rate company or brands as appropriate
     if 'rating_brands' in d:
         rating_brands = d.pop('rating_brands')
         for rating_brand in rating_brands:
@@ -263,9 +279,11 @@ def scrape_rating_page(rating_id):
             rating['brand'] = rating_brand
             yield 'brand_rating', rating
     else:
-        if 'brand' in d:
-            d['brands'] = [d.pop('brand')]
-        yield 'company_rating', d
+        rating = d.copy()
+        if 'brand' in rating:
+            rating['brands'] = [rating.pop('brand')]
+        yield 'company_rating', rating
+
 
 
 def to_iso_date(dt):
