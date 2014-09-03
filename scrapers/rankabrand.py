@@ -46,30 +46,32 @@ def scrape_campaign():
     yield 'campaign', scrape_campaign_from_landing()
 
     log.info('All sectors and subsectors')
-    for sector_id, sector_name in sorted(scrape_sectors().items()):
-        log.info(u'Sector {}: {}'.format(sector_id, sector_name))
+    for sector_id, sector_cats in sorted(scrape_sectors().items()):
+        log.info(u'Sector {}: {}'.format(
+            sector_id, ' > '.join(sector_cats)))
         for brand_id, brand_name in sorted(scrape_brands(sector_id).items()):
             log.info(u'Brand {}: {}'.format(brand_id, brand_name))
-            yield 'brand_rating', scrape_brand_rating(brand_id)
+            yield 'brand_rating', scrape_brand_rating(brand_id, sector_cats)
 
 
 def scrape_sectors():
 
-    sector_to_name = {}
+    sector_to_cats = {}
 
     sectors_json = json.loads(scraperwiki.scrape(
         SECTORS_URL_FMT.format(API_KEY)))
 
     for sector in sectors_json:
-        sector_to_name[int(sector['id'])] = sector['name']
+        sector_to_cats[int(sector['id'])] = [sector['name']]
 
         subsectors_json = json.loads(scraperwiki.scrape(
             SUBSECTORS_URL_FMT.format(API_KEY, sector['id'])))
 
         for subsector in subsectors_json:
-            sector_to_name[int(subsector['id'])] = subsector['name']
+            sector_to_cats[int(subsector['id'])] = [
+                sector['name'], subsector['name']]
 
-    return sector_to_name
+    return sector_to_cats
 
 
 def scrape_brands(sector_id):
@@ -79,7 +81,7 @@ def scrape_brands(sector_id):
     return {int(b['id']): b['brandname'] for b in brands_json}
 
 
-def scrape_brand_rating(brand_id):
+def scrape_brand_rating(brand_id, sector_cats):
     b = {}
     r = {'brand': b}
 
@@ -88,8 +90,7 @@ def scrape_brand_rating(brand_id):
 
     b['brand'] = j['brandname']
     b['company'] = j['owner']
-    # TODO: fix partial categories like "Male" for clothing for men
-    b['categories'] = [j['sector']] + (j['categories'] or [])
+    b['categories'] = sector_cats + (j['categories'] or [])
     b['logo_url'] = j['logo']
 
     r['url'] = j['url']
