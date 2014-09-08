@@ -244,7 +244,7 @@ def save_records(campaign, records):
 
         # allow single category
         if 'category' in record and not table.endswith('_category'):
-            record['categories'] = [record.pop['category']]
+            record['categories'] = [record.pop('category')]
 
         # allow list of categories (strings only)
         if 'categories' in record:
