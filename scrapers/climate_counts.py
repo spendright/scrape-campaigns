@@ -46,12 +46,14 @@ CAMPAIGN = {
     'facebook_url': 'http://www.facebook.com/pages/Climate-Counts/7698023321',
 }
 
-
-
 SECTOR_CORRECTIONS = {
     'Househould Products': 'Household Products',
 }
 
+# brand is listed as company and vice versa
+SWAPPED_BRANDS = {
+    'Kenmore',
+}
 
 PROGRESS_TO_JUDGMENT = {
     'Soaring': 1,
@@ -80,13 +82,15 @@ def scrape_campaign():
         name = c['Name']
         # don't care about e.g. "(formerly Sara Lee)"
         if ' (' in name:
-            name = name[:name.index(' (')]
-        rating['company'] = name
+                name = name[:name.index(' (')]
 
-        # WARNING: brand data is currently full of errors. I've sent some
-        # corrections, which are pending on Climate Counts' IT contractor.
-        if c['Brands']:
-            rating['brands'] = c['Brands']
+        if name in SWAPPED_BRANDS:
+            rating['company'] = c['Brands'][0]
+            rating['brands'] = [name]
+        else:
+            rating['company'] = name
+            if c['Brands']:
+                rating['brands'] = c['Brands']
 
         # sadly, the IDs on the website don't match the IDs for the API
         # TODO: scrape the website?
