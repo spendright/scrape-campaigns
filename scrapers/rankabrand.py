@@ -37,6 +37,9 @@ SUBSECTORS_URL_FMT = (
 BRANDS_URL_FMT = 'http://rankabrand.org/api/{}/en/brands/sector/{}'
 BRAND_URL_FMT = 'http://rankabrand.org/api/{}/en/brand/brand/{}'
 
+# this just means "Supermarkets", but it's listed as a subcategory of
+# Supermarkets
+BAD_CATS = {'Supermarkten'}
 
 log = logging.getLogger(__name__)
 
@@ -46,12 +49,19 @@ def scrape_campaign():
     yield 'campaign', scrape_campaign_from_landing()
 
     log.info('All sectors and subsectors')
-    for sector_id, sector_cats in sorted(scrape_sectors().items()):
+    for sector_id, cat_hierarchy in sorted(scrape_sectors().items()):
         log.info(u'Sector {}: {}'.format(
-            sector_id, ' > '.join(sector_cats)))
+            sector_id, ' > '.join(cat_hierarchy)))
+
+        # handle category hierarchy
+        for i in xrange(len(cat_hierarchy) - 1):
+            yield 'category', dict(parent_category=cat_hierarchy[i],
+                                   category=cat_hierarchy[i + 1])
+
+        # handle each brand in that category
         for brand_id, brand_name in sorted(scrape_brands(sector_id).items()):
             log.info(u'Brand {}: {}'.format(brand_id, brand_name))
-            for record in scrape_brand(brand_id, sector_cats):
+            for record in scrape_brand(brand_id, cat_hierarchy):
                 yield record
 
 
@@ -82,7 +92,7 @@ def scrape_brands(sector_id):
     return {int(b['id']): b['brandname'] for b in brands_json}
 
 
-def scrape_brand(brand_id, sector_cats):
+def scrape_brand(brand_id, cat_hierarchy):
     b = {}
     r = {'brand': b}
 
@@ -92,16 +102,19 @@ def scrape_brand(brand_id, sector_cats):
     b['brand'] = j['brandname']
     b['company'] = j['owner']
     b['logo_url'] = j['logo']
-    b['categories'] = sector_cats + (j['categories'] or [])
 
-    # handle category hierarchy
-    for i in xrange(len(sector_cats) - 1):
-        yield 'category', dict(parent_category=sector_cats[i],
-                               category=sector_cats[i + 1])
-    if sector_cats and j['categories']:
-        for cat in j['categories']:
-            yield 'category', dict(parent_category=sector_cats[-1],
-                                   category=cat)
+    # just use j['categories'] if there are any, otherwise use last
+    # category in cat_hierarchy
+    j['categories'] = [c for c in j['categories'] if c not in BAD_CATS]
+
+    if j['categories']:
+        b['categories'] = j['categories']
+        if cat_hierarchy:
+            for cat in j['categories']:
+                yield 'category', dict(parent_category=cat_hierarchy[-1],
+                                       category=cat)
+    else:
+        b['categories'] = cat_hierarchy[-1:]
 
     r['url'] = j['url']
 
