@@ -99,14 +99,15 @@ def scrape_campaign():
         sector = SECTOR_CORRECTIONS.get(c['Sector']) or c['Sector']
 
         if '--' in sector:  # Beverages--Beer
-            categories = sector.split('--')
-            for i in xrange(len(categories) - 1):
-                yield 'category', dict(parent_category=categories[i],
-                                       category=categories[i + 1])
+            cat_hierarchy = sector.split('--')
+            category = cat_hierarchy[-1]
+            for i in xrange(len(cat_hierarchy) - 1):
+                yield 'category', dict(parent_category=cat_hierarchy[i],
+                                       category=cat_hierarchy[i + 1])
         else:
-            categories = [sector]
+            category = sector
 
-        rating['categories'] = categories
+        rating['category'] = category
 
         if c.get('Scores') and c['Scores'].get('Scores'):
             scores = c['Scores']['Scores'][-1]
