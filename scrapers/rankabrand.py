@@ -105,7 +105,8 @@ def scrape_brand(brand_id, cat_hierarchy):
 
     # just use j['categories'] if there are any, otherwise use last
     # category in cat_hierarchy
-    j['categories'] = [c for c in j['categories'] if c not in BAD_CATS]
+    # sometimes j['categories'] is full of empty strings
+    j['categories'] = [c for c in j['categories'] if c and c not in BAD_CATS]
 
     if j['categories']:
         b['categories'] = j['categories']

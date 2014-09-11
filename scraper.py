@@ -300,6 +300,9 @@ def save_records(campaign, records):
             if record.get(k) is None:
                 record[k] = ''
 
+        if 'category' in key_fields and not record['category']:
+            raise ValueError('blank category field: {}'.format(repr(record)))
+
         key = tuple(record[k] for k in key_fields)
 
         log.debug('`{}` {}: {}'.format(table, repr(key), repr(record)))
