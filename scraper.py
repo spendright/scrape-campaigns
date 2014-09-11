@@ -83,14 +83,10 @@ def main():
 
     failed = []
 
-    for campaign in get_scraper_names():
-        if campaigns:
-            if campaign not in campaigns:
-                continue
-        else:
-            if campaign in skip_campaigns:
-                log.info('Skipping scraper: {}'.format(campaign))
-                continue
+    for campaign in campaigns or get_scraper_names():
+        if not campaigns and campaign in skip_campaigns:
+            log.info('Skipping scraper: {}'.format(campaign))
+            continue
 
             # if no whitelist, just scrape campaigns that haven't
             # been scraped recently
