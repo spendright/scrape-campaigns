@@ -297,11 +297,12 @@ def save_records(campaign, records):
                         k, repr(record)))
 
         for k in key_fields:
-            if record.get(k) is None:
-                record[k] = ''
-
-        if 'category' in key_fields and not record['category']:
-            raise ValueError('blank category field: {}'.format(repr(record)))
+            if not record.get(k):
+                if k == 'scope':
+                    record[k] = ''
+                else:
+                    raise ValueError('empty {} field for `{}`: {}'.format(
+                        repr(k), table, repr(record)))
 
         key = tuple(record[k] for k in key_fields)
 
