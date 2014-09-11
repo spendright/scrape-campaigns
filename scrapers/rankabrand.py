@@ -41,6 +41,13 @@ BRAND_URL_FMT = 'http://rankabrand.org/api/{}/en/brand/brand/{}'
 # Supermarkets
 BAD_CATS = {'Supermarkten'}
 
+# Make these names more explicit
+SECTOR_CORRECTIONS = {
+    'Luxury brands': 'Luxury Apparel',
+    'Premium brands': 'Premium Apparel',
+}
+
+
 log = logging.getLogger(__name__)
 
 
@@ -66,7 +73,6 @@ def scrape_campaign():
 
 
 def scrape_sectors():
-
     sector_to_cats = {}
 
     sectors_json = json.loads(scraperwiki.scrape(
@@ -82,8 +88,15 @@ def scrape_sectors():
             sector_to_cats[int(subsector['id'])] = [
                 sector['name'], subsector['name']]
 
-    return sector_to_cats
+    # correct sector names
+    return dict((sector_id,
+                 [SECTOR_CORRECTIONS.get(cat, cat) for cat in cats])
+                for sector_id, cats in sector_to_cats.iteritems())
 
+
+def correct_sectors(sectors):
+    return [SECTOR_CORRECTIONS.get(sector, sector)
+            for sector in sectors]
 
 def scrape_brands(sector_id):
     brands_json = json.loads(scraperwiki.scrape(
