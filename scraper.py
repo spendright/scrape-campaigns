@@ -217,6 +217,12 @@ def save_records(campaign, records):
 
         record = record.copy()
 
+        # catch empty fields up front
+        for key in 'company', 'brand', 'category':
+            if record.get(key) == '':
+                raise ValueError('empty {} field in `{}`: {}'.format(
+                    repr(key), table, repr(record)))
+
         # allow company to be a dict with company info
         if 'company' in record and isinstance(record['company'], dict):
             handle('company', record['company'])

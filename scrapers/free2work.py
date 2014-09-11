@@ -125,6 +125,9 @@ COMPANY_CORRECTIONS = {
         'rating_brands': ['Amazon Kindle'],
         'scope': None,
     },
+    'Frontier': {
+        'company': 'Frontier Co-op',
+    },
     'Woolworths apparel and electronics': {
         'company': 'Woolworths Australia',
         'brand': 'Woolworths',
@@ -229,6 +232,10 @@ def scrape_rating_page(rating_id):
             company = company[:-len(suffix)]
             d.update(SUFFIXES[suffix])
             break
+
+    # handle empty company field (e.g. Frontier)
+    if not company:
+        company = brand
 
     if company in COMPANY_CORRECTIONS:
         d.update(COMPANY_CORRECTIONS[company])
