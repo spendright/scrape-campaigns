@@ -17,9 +17,6 @@
 
 If you want to run particular scrapers (for testing), you can put
 their names on the command line (e.g. python scraper.py avon kraft).
-
-It's fine to import from this module inside a scraper
-(e.g. from scraper import TM_SYMBOLS)
 """
 import dumptruck
 import logging
