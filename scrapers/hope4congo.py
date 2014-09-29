@@ -17,9 +17,9 @@ from urlparse import urljoin
 import scraperwiki
 from bs4 import BeautifulSoup
 
-from scraper import scrape_copyright
-from scraper import scrape_facebook_url
-from scraper import scrape_twitter_handle
+from srs.scrape import scrape_copyright
+from srs.scrape import scrape_facebook_url
+from srs.scrape import scrape_twitter_handle
 
 URL = 'http://www.raisehopeforcongo.org/content/conflict-minerals-company-rankings'
 

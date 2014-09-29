@@ -19,8 +19,8 @@ import scraperwiki
 from bs4 import BeautifulSoup
 
 from scraper import grade_to_judgment
-from scraper import scrape_facebook_url
-from scraper import scrape_twitter_handle
+from srs.scrape import scrape_facebook_url
+from srs.scrape import scrape_twitter_handle
 
 # This information is all available through the website, but using the API
 # at rankabrand's request, to save bandwidth. This is a "test" API key. It's

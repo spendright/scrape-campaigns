@@ -18,7 +18,7 @@ from urlparse import urljoin
 import scraperwiki
 from bs4 import BeautifulSoup
 
-from scraper import scrape_twitter_handle
+from srs.scrape import scrape_twitter_handle
 
 URL = ('http://www.greenpeace.org/international/en/campaigns/climate-change/'
        'cool-it/Campaign-analysis/Guide-to-Greener-Electronics/')

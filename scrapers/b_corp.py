@@ -23,9 +23,9 @@ import logging
 from bs4 import BeautifulSoup
 from mechanize import Browser
 
-from scraper import scrape_copyright
-from scraper import scrape_facebook_url
-from scraper import scrape_twitter_handle
+from srs.scrape import scrape_copyright
+from srs.scrape import scrape_facebook_url
+from srs.scrape import scrape_twitter_handle
 
 
 MAX_SCORE = 200

@@ -16,8 +16,8 @@ import logging
 import scraperwiki
 from bs4 import BeautifulSoup
 
-from scraper import scrape_copyright
-from scraper import scrape_twitter_handle
+from srs.scrape import scrape_copyright
+from srs.scrape import scrape_twitter_handle
 
 URL = 'http://www.bangladeshaccord.org/'
 
