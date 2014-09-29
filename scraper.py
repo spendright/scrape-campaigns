@@ -360,21 +360,5 @@ def get_campaign_to_last_scraped():
         raise
 
 
-# UTILITY CODE FOR SCRAPERS
-
-def grade_to_judgment(grade):
-    """Convert a letter grade (e.g. "B+") to a judgment (1 for A or B,
-    0 for C, -1 for D, E, or F).
-
-    This works for Free2Work and Rank a Brand, anyways. In theory, campaigns
-    could color their grades differently.
-    """
-    return cmp('C', grade[0].upper())
-
-
-
-
-
-
 if __name__ == '__main__':
     main()

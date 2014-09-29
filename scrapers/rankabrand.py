@@ -18,7 +18,7 @@ from urlparse import urljoin
 import scraperwiki
 from bs4 import BeautifulSoup
 
-from scraper import grade_to_judgment
+from srs.rating import grade_to_judgment
 from srs.scrape import scrape_facebook_url
 from srs.scrape import scrape_twitter_handle
 

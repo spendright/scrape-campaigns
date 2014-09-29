@@ -20,7 +20,7 @@ import scraperwiki
 import re
 from bs4 import BeautifulSoup
 
-from scraper import grade_to_judgment
+from srs.rating import grade_to_judgment
 
 API_TOKEN = '7baaa18a777fc27287ad5898750cfe09'
 
