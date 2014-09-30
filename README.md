@@ -52,12 +52,15 @@ Writing a Scraper
 
 Writing a scraper is pretty simple: create a module in `scrapers/` that
 defines a function `scrape_campaign()`. The function should yield tuples
-of table_name, row. Don't include `campaign_id`; this is added
-automatically. For example:
+of table_name, row. For example:
 
     yield 'brand', {'brand': "Burt's Bees', 'company': 'Clorox'}
 
 The names and fields of each table are described in this [README](https://github.com/spendright-scrapers/everything/blob/master/README.md).
+
+For ratings and the campaign itself, don't include `campaign_id`; this is added
+automatically. You may also refer to `campaign_brand_rating` and
+`campaign_company_rating` as simply `brand_rating` and `company_rating`.
 
 You can in theory use any of the libraries provided by the [morph.io docker](https://github.com/openaustralia/morph-docker-python). So far, I just use `scraperwiki.scrape(url)` to fetch web pages, and `bs4.BeautifulSoup(html)` to parse them. If you use other libraries, please add them to `requirements.txt`.
 
@@ -83,7 +86,7 @@ also be dicts (like for "company").
 If you are outputting a company, brand, or rating, you can add a "categories"
 field which is a list of categories for the company/brand.
 
-Rows in `campaign_company` and `campaign_brand` are automatically created
+Rows in `company` and `brand` are automatically created
 for every company and brand/company pair mentioned. You might still want to
 emit rows for companies or brands if you have additional information (e.g.
 their `twitter_handle`).

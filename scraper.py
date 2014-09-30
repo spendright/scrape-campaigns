@@ -18,40 +18,29 @@
 If you want to run particular scrapers (for testing), you can put
 their names on the command line (e.g. python scraper.py avon kraft).
 """
-import dumptruck
 import logging
-import re
-import sqlite3
-import sys
 from argparse import ArgumentParser
-from collections import defaultdict
-from decimal import Decimal
-from datetime import datetime
 from datetime import timedelta
-from os.path import dirname
 from os import environ
-from os import listdir
-from sqlite3 import OperationalError
-from traceback import print_exc
-from urlparse import urlparse
 
-import scraperwiki
-
-import scrapers
-
+from srs.db import use_decimal_type_in_sqlite
+from srs.harness import run_scrapers
 
 log = logging.getLogger('scraper')
 
-# 0 is a really common minimum score; auto-fill this
-DEFAULT_MIN_SCORE = 0
 
-
-# support decimal type
-dumptruck.PYTHON_SQLITE_TYPE_MAP.setdefault(Decimal, 'real')
-sqlite3.register_adapter(Decimal, str)
-
-
-ISO_8601_FMT = '%Y-%m-%dT%H:%M:%S.%fZ'
+# tables supported by this scraper
+SUPPORTED_TABLES = [
+    'brand',
+    'brand_category',
+    'campaign',
+    'campaign_brand_rating',
+    'campaign_company_rating',
+    'category',
+    'company',
+    'company_category',
+    'scraper',
+]
 
 # scrape these campaigns no more often than this limit
 # morph.io scrapes nightly by default
@@ -74,41 +63,13 @@ def main():
     if environ.get('MORPH_SKIP_CAMPAIGNS'):
         skip_campaigns = environ['MORPH_SKIP_CAMPAIGNS'].split(',')
 
-    init_tables()
+    use_decimal_type_in_sqlite()
 
-    campaign_to_last_scraped = get_campaign_to_last_scraped()
-
-    failed = []
-
-    for campaign in campaigns or get_scraper_names():
-        if not campaigns and campaign in skip_campaigns:
-            log.info('Skipping scraper: {}'.format(campaign))
-            continue
-
-            # if no whitelist, just scrape campaigns that haven't
-            # been scraped recently
-            scrape_freq = CAMPAIGN_SCRAPE_FREQUENCY.get(campaign)
-            if scrape_freq:
-                last_scraped = campaign_to_last_scraped.get(campaign)
-                if last_scraped is not None:
-                    time_since_scraped = datetime.utcnow() - last_scraped
-                    if time_since_scraped < scrape_freq:
-                        log.info('Skipping scraper: {} (ran {} ago)'.format(
-                            campaign, time_since_scraped))
-                        continue
-
-        log.info('Launching scraper: {}'.format(campaign))
-        try:
-            scraper = load_scraper(campaign)
-            save_records(campaign, scraper.scrape_campaign())
-        except:
-            failed.append(campaign)
-            print_exc()
-
-    # just calling exit(1) didn't register on morph.io
-    if failed:
-        raise Exception(
-            'failed to scrape campaigns: {}'.format(', '.join(failed)))
+    run_scrapers(get_records_from_campaign_scraper,
+                 supported_tables=SUPPORTED_TABLES,
+                 scraper_ids=campaigns,
+                 skip_scraper_ids=skip_campaigns,
+                 scraper_to_freq=CAMPAIGN_SCRAPE_FREQUENCY)
 
 
 def parse_args(args=None):
@@ -122,239 +83,8 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-# map from table name to fields used for the primary key (not including
-# campaign_id). All key fields are currently TEXT
-TABLE_TO_KEY_FIELDS = {
-    # info about the campaign's creator, etc.
-    'campaign': [],
-    # factual information about a brand (e.g. company, url, etc.)
-    'campaign_brand': ['company', 'brand'],
-    # factual information about which categories a brand belongs to
-    'campaign_brand_category': ['company', 'brand', 'category'],
-    # should you buy this brand?
-    'campaign_brand_rating': ['company', 'brand', 'scope'],
-    # category hierarchy information
-    'campaign_category': ['category'],
-    # factual information about a company (e.g. url, email, etc.)
-    'campaign_company': ['company'],
-    # factual information about which categories a company belongs to
-    'campaign_company_category': ['company', 'category'],
-    # should you buy from this company?
-    'campaign_company_rating': ['company', 'scope'],
-}
-
-
-RATING_FIELDS = [
-    # -1 (bad), 0 (mixed), or 1 (good). Lingua franca of ratings
-    ('judgment', 'TINYINT'),
-    # letter grade
-    ('grade', 'TEXT'),
-    # written description (e.g. cannot recommend)
-    ('description', 'TEXT'),
-    # numeric score (higher numbers are good)
-    ('score', 'NUMERIC'),
-    ('min_score', 'NUMERIC'),
-    ('max_score', 'NUMERIC'),
-    # ranking (low numbers are good)
-    ('rank', 'INTEGER'),
-    ('num_ranked', 'INTEGER'),
-    # url for details about the rating
-    ('url', 'TEXT'),
-]
-
-
-TABLE_TO_EXTRA_FIELDS = {
-    'campaign': [('last_scraped', 'TEXT')],
-    'campaign_brand_rating': RATING_FIELDS,
-    'campaing_company_rating': RATING_FIELDS,
-}
-
-
-def merge(src, dst):
-    """Merge src dictionary into dst. Only overwrite blank values."""
-    for k, v in src.iteritems():
-        if v is not None and (v != '' or not dst.get(k)):
-            dst[k] = v
-
-
-def init_tables():
-    for table, key_fields in sorted(TABLE_TO_KEY_FIELDS.items()):
-        key_fields = ['campaign_id'] + key_fields
-
-        sql = 'CREATE TABLE IF NOT EXISTS `{}` ('.format(table)
-        for k in key_fields:
-            sql += '`{}` TEXT, '.format(k)
-        for k, field_type in TABLE_TO_EXTRA_FIELDS.get(table) or ():
-            sql += '`{}` {}, '.format(k, field_type)
-        sql += 'PRIMARY KEY ({}))'.format(', '.join(key_fields))
-
-        scraperwiki.sql.execute(sql)
-
-
-def clear_campaign(campaign):
-    for table in sorted(TABLE_TO_KEY_FIELDS):
-        scraperwiki.sql.execute(
-            'DELETE FROM {} WHERE campaign_id = ?'.format(table), [campaign])
-
-
-def save_records(campaign, records):
-    table_to_key_to_row = defaultdict(dict)
-
-    def handle(record_type, record):
-        """handle a record from a scraper, which main contain/imply
-        other records"""
-        if record_type.startswith('campaign'):
-            table = record_type
-        else:
-            table = 'campaign_' + record_type
-
-        record = record.copy()
-
-        # catch empty fields up front
-        for key in 'company', 'brand', 'category':
-            if record.get(key) == '':
-                raise ValueError('empty {} field in `{}`: {}'.format(
-                    repr(key), table, repr(record)))
-
-        # allow company to be a dict with company info
-        if 'company' in record and isinstance(record['company'], dict):
-            handle('company', record['company'])
-            record['company'] = record['company']['company']
-
-        # allow company to be a dict with company info
-        if 'brand' in record and isinstance(record['brand'], dict):
-            handle('brand', record['brand'])
-            record['company'] = record['brand'].get('company', '')
-            record['brand'] = record['brand']['brand']
-
-        company = record.get('company', '')
-
-        # allow list of brands, which can be dicts
-        if 'brands' in record:
-            for brand in record.pop('brands'):
-                company = record['company']
-                if isinstance(brand, dict):
-                    handle('brand', dict(company=company, **brand))
-                else:
-                    handle('brand', dict(company=company, brand=brand))
-
-        # note that brand is also used in the loop above
-        brand = record.get('brand', '')
-
-        # allow single category
-        if 'category' in record and not table.endswith('_category'):
-            record['categories'] = [record.pop('category')]
-
-        # allow list of categories (strings only)
-        if 'categories' in record:
-            if brand:
-                for c in record.pop('categories'):
-                    handle('brand_category', dict(
-                        company=company, brand=brand, category=c))
-            else:
-                for category in record.pop('categories'):
-                    handle('company_category', dict(
-                        company=company, category=category))
-
-        # assume min_score of 0 if not specified
-        if 'score' in record and 'min_score' not in record:
-            record['min_score'] = DEFAULT_MIN_SCORE
-
-        # automatic brand entries
-        if 'brand' in record and table != 'campaign_brand':
-            handle('brand', dict(company=company, brand=brand))
-
-        # automatic category entries
-        if 'category' in record and table != 'campaign_category':
-            handle('category', dict(category=record['category']))
-        if 'parent_category' in record:
-            handle('category', dict(category=record['parent_category']))
-
-        # automatic company entries
-        if 'company' in record and table != 'campaign_company':
-            handle('company', dict(company=company))
-
-        store(table, record)
-
-    def store(table, record):
-        """store an upacked record in table_to_key_to_row, possibly
-        merging it with a previous record."""
-        key_fields = TABLE_TO_KEY_FIELDS[table]
-
-        # strip strings before storing them
-        for k in record:
-            if k is None:
-                del record[k]
-            elif isinstance(record[k], basestring):
-                record[k] = record[k].strip()
-
-        # verify that URLs are absolute
-        for k in record:
-            if k.split('_')[-1] == 'url':
-                if record[k] and not urlparse(record[k]).scheme:
-                    raise ValueError('{} has no scheme: {}'.format(
-                        k, repr(record)))
-
-        for k in key_fields:
-            if not record.get(k):
-                if k == 'scope':
-                    record[k] = ''
-                else:
-                    raise ValueError('empty {} field for `{}`: {}'.format(
-                        repr(k), table, repr(record)))
-
-        key = tuple(record[k] for k in key_fields)
-
-        log.debug('`{}` {}: {}'.format(table, repr(key), repr(record)))
-
-        if key in table_to_key_to_row[table]:
-            merge(record, table_to_key_to_row[table][key])
-        else:
-            table_to_key_to_row[table][key] = record
-
-    for record_type, record in records:
-        handle(record_type, record)
-
-    # add the time this campaign was scraped
-    handle('campaign', {
-        'last_scraped': datetime.utcnow().strftime(ISO_8601_FMT)})
-
-    clear_campaign(campaign)
-
-    for table in table_to_key_to_row:
-        key_fields = TABLE_TO_KEY_FIELDS[table]
-
-        for key, row in table_to_key_to_row[table].iteritems():
-            scraperwiki.sql.save(
-                ['campaign_id'] + key_fields,
-                dict(campaign_id=campaign, **row),
-                table_name=table)
-
-
-def get_scraper_names():
-    for filename in sorted(listdir(dirname(scrapers.__file__))):
-        if filename.endswith('.py') and not filename.startswith('_'):
-            yield filename[:-3]
-
-
-def load_scraper(name):
-    module_name = 'scrapers.' + name
-    __import__(module_name)
-    return sys.modules[module_name]
-
-
-def get_campaign_to_last_scraped():
-    try:
-        return {
-            campaign_id: datetime.strptime(last_scraped, ISO_8601_FMT)
-            for campaign_id, last_scraped in scraperwiki.sql.execute(
-                'SELECT campaign_id, last_scraped FROM campaign')['data']
-            if last_scraped
-        }
-    except OperationalError as e:
-        if 'no such column' in e.message:
-            return {}
-        raise
+def get_records_from_campaign_scraper(scraper):
+    return scraper.scrape_campaign()
 
 
 if __name__ == '__main__':

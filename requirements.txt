@@ -1,3 +1,7 @@
 # working from https://github.com/openaustralia/morph-docker-python
 beautifulsoup4==4.1.3
 -e git+https://github.com/openaustralia/scraperwiki-python.git@morph_defaults#egg=scraperwiki
+# matches morph.io, makes beautifulsoup work better
+html5lib==0.90
+# matches morph.io, used for b_corp
+mechanize==0.2.5
