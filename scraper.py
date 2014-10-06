@@ -29,19 +29,6 @@ from srs.harness import run_scrapers
 log = logging.getLogger('scraper')
 
 
-# tables supported by this scraper
-SUPPORTED_TABLES = [
-    'brand',
-    'brand_category',
-    'campaign',
-    'campaign_brand_rating',
-    'campaign_company_rating',
-    'category',
-    'company',
-    'company_category',
-    'scraper',
-]
-
 # scrape these campaigns no more often than this limit
 # morph.io scrapes nightly by default
 CAMPAIGN_SCRAPE_FREQUENCY = {
@@ -66,7 +53,6 @@ def main():
     use_decimal_type_in_sqlite()
 
     run_scrapers(get_records_from_campaign_scraper,
-                 supported_tables=SUPPORTED_TABLES,
                  scraper_ids=campaigns,
                  skip_scraper_ids=skip_campaigns,
                  scraper_to_freq=CAMPAIGN_SCRAPE_FREQUENCY)
