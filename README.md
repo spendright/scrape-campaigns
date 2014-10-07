@@ -62,7 +62,7 @@ For ratings and the campaign itself, don't include `campaign_id`; this is added
 automatically. You may also refer to `campaign_brand_rating` and
 `campaign_company_rating` as simply `brand_rating` and `company_rating`.
 
-You can in theory use any of the libraries provided by the [morph.io docker](https://github.com/openaustralia/morph-docker-python). So far, I just use `scraperwiki.scrape(url)` to fetch web pages, and `bs4.BeautifulSoup(html)` to parse them. If you use other libraries, please add them to `requirements.txt`.
+It's fine to use other python libraries; just please add them to `requirements.txt`.
 
 The harness that runs scrapers provides a number of tricks so that your
 scraper can follow the structure of the page rather than the structure

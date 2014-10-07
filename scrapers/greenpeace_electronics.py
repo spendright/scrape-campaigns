@@ -15,8 +15,8 @@ import re
 from decimal import Decimal
 from urlparse import urljoin
 
-import scraperwiki
-from bs4 import BeautifulSoup
+
+from srs.scrape import scrape_soup
 
 from srs.scrape import scrape_twitter_handle
 
@@ -59,7 +59,7 @@ def score_to_judgment(score):
 
 
 def scrape_campaign():
-    soup = BeautifulSoup(scraperwiki.scrape(URL))
+    soup = scrape_soup(URL)
 
     # campaign record
     c = {'url': URL, 'goal': GOAL}

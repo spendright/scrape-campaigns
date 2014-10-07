@@ -13,8 +13,8 @@
 #   limitations under the License.
 import logging
 
-import scraperwiki
-from bs4 import BeautifulSoup
+
+from srs.scrape import scrape_soup
 
 from srs.scrape import scrape_copyright
 from srs.scrape import scrape_twitter_handle
@@ -49,7 +49,7 @@ def scrape_campaign():
 def scrape_landing_page():
     d = {}
 
-    soup = BeautifulSoup(scraperwiki.scrape(URL))
+    soup = scrape_soup(URL)
 
     d['signatories_url'] = soup.find('a', text='Signatories')['href']
 
@@ -64,7 +64,7 @@ def scrape_landing_page():
 
 
 def scrape_signatories_page(signatories_url):
-    soup = BeautifulSoup(scraperwiki.scrape(signatories_url))
+    soup = scrape_soup(signatories_url)
 
     cols = soup.select('.ezcol-one-quarter')[:4]
 

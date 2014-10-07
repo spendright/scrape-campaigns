@@ -14,8 +14,8 @@
 import re
 from urlparse import urljoin
 
-import scraperwiki
-from bs4 import BeautifulSoup
+
+from srs.scrape import scrape_soup
 
 from srs.scrape import scrape_copyright
 from srs.scrape import scrape_facebook_url
@@ -47,7 +47,7 @@ CATEGORY = 'Electronics'
 
 
 def scrape_campaign():
-    soup = BeautifulSoup(scraperwiki.scrape(URL))
+    soup = scrape_soup(URL)
 
     # campaign record
     c = {'url': URL, 'goal': GOAL}

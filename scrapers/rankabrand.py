@@ -11,12 +11,11 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import json
 import logging
 from urlparse import urljoin
 
-import scraperwiki
-from bs4 import BeautifulSoup
+from srs.scrape import scrape_json
+from srs.scrape import scrape_soup
 
 from srs.rating import grade_to_judgment
 from srs.scrape import scrape_facebook_url
@@ -75,14 +74,13 @@ def scrape_campaign():
 def scrape_sectors():
     sector_to_cats = {}
 
-    sectors_json = json.loads(scraperwiki.scrape(
-        SECTORS_URL_FMT.format(API_KEY)))
+    sectors_json = scrape_json(SECTORS_URL_FMT.format(API_KEY))
 
     for sector in sectors_json:
         sector_to_cats[int(sector['id'])] = [sector['name']]
 
-        subsectors_json = json.loads(scraperwiki.scrape(
-            SUBSECTORS_URL_FMT.format(API_KEY, sector['id'])))
+        subsectors_json = scrape_json(
+            SUBSECTORS_URL_FMT.format(API_KEY, sector['id']))
 
         for subsector in subsectors_json:
             sector_to_cats[int(subsector['id'])] = [
@@ -99,8 +97,8 @@ def correct_sectors(sectors):
             for sector in sectors]
 
 def scrape_brands(sector_id):
-    brands_json = json.loads(scraperwiki.scrape(
-        BRANDS_URL_FMT.format(API_KEY, sector_id)))
+    brands_json = scrape_json(
+        BRANDS_URL_FMT.format(API_KEY, sector_id))
 
     return {int(b['id']): b['brandname'] for b in brands_json}
 
@@ -109,8 +107,7 @@ def scrape_brand(brand_id, cat_hierarchy):
     b = {}
     r = {'brand': b}
 
-    j = json.loads(scraperwiki.scrape(
-        BRAND_URL_FMT.format(API_KEY, brand_id)))
+    j = scrape_json(BRAND_URL_FMT.format(API_KEY, brand_id))
 
     b['brand'] = j['brandname']
     b['company'] = j['owner']
@@ -142,7 +139,7 @@ def scrape_brand(brand_id, cat_hierarchy):
 
 
 def scrape_campaign_from_landing():
-    soup = BeautifulSoup(scraperwiki.scrape(LANDING_URL))
+    soup = scrape_soup(LANDING_URL)
 
     c = {}
 

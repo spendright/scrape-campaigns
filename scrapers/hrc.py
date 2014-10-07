@@ -16,8 +16,8 @@ from os import environ
 from os.path import basename
 from urlparse import urljoin
 
-import scraperwiki
-from bs4 import BeautifulSoup
+from srs.scrape import scrape_soup
+
 
 URL = 'http://www.hrc.org/apps/buyersguide/'
 
@@ -135,7 +135,7 @@ def scrape_landing_page():
     d = {}
     d['campaign'] = CAMPAIGN
 
-    soup = BeautifulSoup(scraperwiki.scrape(URL))
+    soup = scrape_soup(URL)
 
     d['cats'] = options_to_dict(
         soup.select('select[name=category] option'))
@@ -153,7 +153,7 @@ def scrape_org_page(org_id):
     url = PROFILE_URL_FMT.format(org_id)
     rating['url'] = url
 
-    soup = BeautifulSoup(scraperwiki.scrape(url))
+    soup = scrape_soup(url)
 
     sections = soup.select('div.legislation-box')
 
@@ -209,10 +209,12 @@ def scrape_org_page(org_id):
 
 def scrape_cat_page(cat_id):
     url = RANKING_URL_FMT.format(cat_id)
-    html = scraperwiki.scrape(url)
-    # runs out of memory on morph.io (killed by some supervisor process)
+    # back when HRC's category pages work,
+    # ran out of memory on morph.io (killed by some supervisor process)
     # parsing http://www.hrc.org/apps/buyersguide/ranking.php?category=1223
-    soup = BeautifulSoup(html)
+    # probably will need to scrape the html and manually grab a subset
+    # of the page to parse
+    soup = scrape_soup(url)
     div = soup.select('div.legislation-box')[1]
 
     category = div.h2.text.strip()

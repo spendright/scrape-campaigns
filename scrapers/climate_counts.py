@@ -16,7 +16,8 @@
 import json
 import logging
 
-import scraperwiki
+from srs.scrape import scrape
+
 
 # fetch everything, through the API
 # TODO: scrape http://climatecounts.org/searchresults.php?p=brands instead
@@ -73,7 +74,7 @@ def scrape_campaign():
     yield 'campaign', CAMPAIGN
 
     log.info('Fetching all data from API')
-    j = json.loads(scraperwiki.scrape(API_URL))
+    j = json.loads(scrape(API_URL))
     companies = j['Companies']
 
     for c in companies:
