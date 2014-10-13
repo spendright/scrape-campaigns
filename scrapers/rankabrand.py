@@ -12,6 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import logging
+from urllib import quote_plus
 from urlparse import urljoin
 
 from srs.scrape import scrape_json
@@ -111,7 +112,12 @@ def scrape_brand(brand_id, cat_hierarchy):
 
     b['brand'] = j['brandname']
     b['company'] = j['owner']
-    b['logo_url'] = j['logo']
+
+    # last part of logo URL may contain spaces, unicode
+    logo_url = j['logo']
+    logo_url_parts = logo_url.split('/')
+    logo_url_parts[-1] = quote_plus(logo_url_parts[-1].encode('utf8'))
+    b['logo_url'] = '/'.join(logo_url_parts)
 
     # just use j['categories'] if there are any, otherwise use last
     # category in cat_hierarchy
