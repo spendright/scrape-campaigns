@@ -177,7 +177,7 @@ log = logging.getLogger(__name__)
 
 def scrape_rating_page(rating_id):
     url = RATINGS_URL + str(rating_id)
-    soup = BeautifulSoup(scrape(url), from_encoding='utf-8')
+    soup = BeautifulSoup(scrape(url, headers={}), from_encoding='utf-8')
 
     d = {}
     d['url'] = url
@@ -316,14 +316,15 @@ def to_iso_date(dt):
 
 def scrape_rating_ids_for_industry(industry_id):
     url = INDUSTRY_URL + str(industry_id)
-    soup = scrape_soup(url)
+    # Accepts: text/html leads to a 406
+    soup = scrape_soup(url, headers={})
 
     for a in soup.select('.score-card-button a'):
         yield int(a['href'].split('/')[-1])
 
 
 def scrape_industries():
-    industry_list = scrape(INDUSTRIES_URL)
+    industry_list = scrape(INDUSTRIES_URL, headers={})
     match = JSON_CALLBACK_RE.search(industry_list)
     industry_json = json.loads(match.group(1))
 
