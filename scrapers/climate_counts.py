@@ -74,11 +74,8 @@ IGNORE_TWITTER_HANDLES = {
     '@ShakleeUpdates',  # now ShakleeHQ
     '@UPS_News',  # ignore in favor of @UPS
     '@theUPSstore_PR',  # ignore in favor of @UPS
+    '@',  # derp
 }
-
-
-# TODO: fix "Beverages-Beer"
-
 
 log = logging.getLogger(__name__)
 
@@ -115,6 +112,11 @@ def scrape_product_types():
         cat_soup = scrape_soup(cat_url)
 
         for company, brand, sector in scrape_brand_results(cat_soup):
+            if '-' in sector:  # Beer-Beverages
+                parent_sector, sector = sector.split('-', 1)
+                yield 'category', dict(
+                    category=sector, parent_category=parent_sector)
+
             yield 'category', dict(category=cat, parent_category=sector)
             yield 'brand', dict(company=company, brand=brand, category=cat)
 
@@ -140,6 +142,11 @@ def scrape_brands(known_brands):
             continue
 
         if sector:
+            if '-' in sector:  # Beer-Beverages
+                parent_sector, sector = sector.split('-', 1)
+                yield 'category', dict(
+                    category=sector, parent_category=parent_sector)
+
             yield 'brand', dict(company=company, brand=brand, category=sector)
         else:
             yield 'brand', dict(company=company, brand=brand)
@@ -196,6 +203,7 @@ def scrape_company(url, known_brands):
     status_path = soup.select('#company_score_status img')[0]['src']
     r['description'], r['judgment'] = scrape_description_and_judgment(
         status_path)
+    r['url'] = url
 
     # icon
     icon_as = soup.select('#company_score_company_icon a')
