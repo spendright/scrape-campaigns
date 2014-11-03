@@ -1,3 +1,2 @@
 -r submodules/srs/requirements.txt
 Unidecode==0.04.9
-mechanize==0.2.5  # used by b_corp scraper
