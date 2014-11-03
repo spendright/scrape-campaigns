@@ -16,6 +16,9 @@ from os import environ
 from os.path import basename
 from urlparse import urljoin
 
+from bs4 import BeautifulSoup
+
+from srs.scrape import scrape
 from srs.scrape import scrape_soup
 
 
@@ -153,7 +156,9 @@ def scrape_org_page(org_id):
     url = PROFILE_URL_FMT.format(org_id)
     rating['url'] = url
 
-    soup = scrape_soup(url)
+    html = scrape(url)
+    # skip some HTML comments that confuse BeautifulSoup
+    soup = BeautifulSoup(html[100:])
 
     sections = soup.select('div.legislation-box')
 
