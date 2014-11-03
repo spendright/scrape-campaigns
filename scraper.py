@@ -30,8 +30,12 @@ log = logging.getLogger('scraper')
 
 
 # scrape these campaigns no more often than this limit
-# morph.io scrapes nightly by default
+# morph.io scrapes nightly by default.
 CAMPAIGN_SCRAPE_FREQUENCY = {
+    'b_corp': timedelta(hours=12),
+    'climate_counts': timedelta(hours=12),
+    'free2work': timedelta(hours=12),
+    'hrc': timedelta(hours=12),
     'rankabrand': timedelta(days=6.1),  # aim for weekly
 }
 
