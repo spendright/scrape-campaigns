@@ -138,11 +138,12 @@ def do_corp(url, industry):
 
     # use both industry and category on page (industry is more consistent)
     c['categories'] = [industry]
-    # almost all pages have their own category description, but not
-    # http://www.bcorporation.net/community/nazori
+    # *almost* all bizs have their own category description, but not all
     category_h3s = soup.select('.company-desc-inner h3')
     if category_h3s:
-        c['categories'].append(category_h3s[0].text)
+        cat = category_h3s[0].text.strip()
+        if cat:
+            c['categories'].append(cat)
 
     # social media
     left_col = soup.select('.two-col.last')[0]
