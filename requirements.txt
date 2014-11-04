@@ -1,2 +1,1 @@
 -r submodules/srs/requirements.txt
-Unidecode==0.04.9
