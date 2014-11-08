@@ -130,6 +130,9 @@ COMPANY_CORRECTIONS = {
     'Frontier': {
         'company': 'Frontier Co-op',
     },
+    'Nescafe': {  # don't want duplicate ratings for Nestle
+        'company': 'Nestle Inc.',  # how free2work spells it
+    },
     'Woolworths apparel and electronics': {
         'company': 'Woolworths Australia',
         'brand': 'Woolworths',
