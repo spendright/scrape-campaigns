@@ -117,7 +117,7 @@ def scrape_brand(url, sectors, soup=None):
         soup = scrape_soup(url)
 
     b = {}  # brand dict
-    r = {'brand': b}  # rating dict
+    r = {'brand': b, 'url': url}  # rating dict
 
     # grade
     brand_a = soup.select('dl.brands a')[0]
