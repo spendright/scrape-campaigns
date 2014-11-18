@@ -36,7 +36,7 @@ DIRECTORY_URL = 'http://www.bcorporation.net/community/find-a-b-corp'
 
 # from http://www.bcorporation.net/what-are-b-corps/why-b-corps-matter
 GOAL = 'Redefine success in business'
-AUTHOR = 'B Labs'
+AUTHOR = 'B Lab'
 CAMPAIGN = 'B Corporation List'
 
 log = logging.getLogger(__name__)
