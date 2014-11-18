@@ -1,4 +1,4 @@
-#   Copyright 2014 David Marin
+#   Copyright 2014 SpendRight, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -12,34 +12,21 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import logging
-from urllib import quote_plus
+from urllib import urlencode
+from urlparse import parse_qsl
 from urlparse import urljoin
+from urlparse import urlparse
+from urlparse import urlunparse
 
-from srs.scrape import scrape_json
 from srs.scrape import scrape_soup
 
 from srs.rating import grade_to_judgment
 from srs.scrape import scrape_facebook_url
 from srs.scrape import scrape_twitter_handle
 
-# This information is all available through the website, but using the API
-# at rankabrand's request, to save bandwidth. This is a "test" API key. It's
-# all public information, so I think the main point of keys is to
-# distinguish clients. Will ask.
-API_KEY = 'd5aed03480db39ce067ace424af630c2'
+# for now, we're just scraping the english-language site
+URL = 'http://rankabrand.org/'
 
-LANDING_URL = 'http://rankabrand.org/'
-
-
-SECTORS_URL_FMT = 'http://rankabrand.org/api/{}/en/sectors'
-SUBSECTORS_URL_FMT = (
-    'http://rankabrand.org/api/{}/en/sectors/parent/{}')
-BRANDS_URL_FMT = 'http://rankabrand.org/api/{}/en/brands/sector/{}'
-BRAND_URL_FMT = 'http://rankabrand.org/api/{}/en/brand/brand/{}'
-
-# this just means "Supermarkets", but it's listed as a subcategory of
-# Supermarkets
-BAD_CATS = {'Supermarkten'}
 
 # Make these names more explicit
 SECTOR_CORRECTIONS = {
@@ -51,132 +38,142 @@ SECTOR_CORRECTIONS = {
 log = logging.getLogger(__name__)
 
 
-def scrape_campaign():
+def scrape_campaign(url=URL):
+    log.info('Landing Page')
+    soup = scrape_soup(url)
 
-    yield 'campaign', scrape_campaign_from_landing()
+    c = {}  # campaign dict
 
-    log.info('All sectors and subsectors')
-    for sector_id, cat_hierarchy in sorted(scrape_sectors().items()):
-        log.info(u'Sector {}: {}'.format(
-            sector_id, ' > '.join(cat_hierarchy)))
+    c['goal'], c['campaign'] = soup.title.text.split('|')[-2:]
+    c['goal'] = c['goal'].capitalize()  # for consistency
+    c['url'] = url
 
-        # handle category hierarchy
-        for i in xrange(len(cat_hierarchy) - 1):
-            yield 'category', dict(parent_category=cat_hierarchy[i],
-                                   category=cat_hierarchy[i + 1])
+    # there isn't a copyright notice on the page!
+    c['donate_url'] = urljoin(url,
+                              soup.find('a', text='Support us')['href'])
+    c['facebook_url'] = scrape_facebook_url(soup)
+    c['twitter_handle'] = scrape_twitter_handle(soup)
 
-        # handle each brand in that category
-        for brand_id, brand_name in sorted(scrape_brands(sector_id).items()):
-            log.info(u'Brand {}: {}'.format(brand_id, brand_name))
-            for record in scrape_brand(brand_id, cat_hierarchy):
+    yield 'campaign', c
+
+    for a in soup.select('ul.sectors a'):
+        sector = a.text
+        sector_url = urljoin(url, a['href'])
+        for record in scrape_sector(sector_url, sector):
+            yield record
+
+
+def scrape_sector(url, sector):
+    log.info(u'Sector: {}'.format(sector))
+    soup = scrape_soup(url)
+
+    current_li = soup.find('li', class_='current')
+
+    if current_li:
+        subsector_as = current_li.select('ul li a')
+
+        if subsector_as:
+            for a in subsector_as:
+                subsector = a.text
+                subsector_url = urljoin(url, a['href'])
+                for record in scrape_subsector(
+                        subsector_url, [sector, subsector]):
+                    yield record
+        else:
+            # no subsectors
+            for record in scrape_subsector(url, [sector], soup=soup):
+                yield record
+    else:
+        # possible to be one or no brands in sector
+        if soup.select('div.logobox'):
+            # single brand in sector (e.g. T-Mobile in telecom)
+            for record in scrape_brand(url, [sector], soup=soup):
                 yield record
 
 
-def scrape_sectors():
-    sector_to_cats = {}
+def scrape_subsector(url, sectors, soup=None):
+    if soup is None:
+        log.info(u'Subsector: {}'.format(sectors[-1]))
+        soup = scrape_soup(url)
 
-    sectors_json = scrape_json(SECTORS_URL_FMT.format(API_KEY))
+    if soup.select('div.logobox'):
+        # dumped directly into brand page (does this happen?)
+        for record in scrape_brand(url, sectors, soup=soup):
+            yield record
+    else:
+        for a in soup.select('dl.brands a'):
+            brand_url = urljoin(url, a['href'])  # will get brand from page
+            for record in scrape_brand(brand_url, sectors):
+                yield record
 
-    for sector in sectors_json:
-        sector_to_cats[int(sector['id'])] = [sector['name']]
+        next_pg_a = soup.find('a', title='Next page')
+        if next_pg_a:
+            next_pg_url = urljoin(url, next_pg_a['href'])
+            for record in scrape_subsector(next_pg_url, sectors):
+                yield record
 
-        subsectors_json = scrape_json(
-            SUBSECTORS_URL_FMT.format(API_KEY, sector['id']))
+def scrape_brand(url, sectors, soup=None):
+    if soup is None:
+        soup = scrape_soup(url)
 
-        for subsector in subsectors_json:
-            sector_to_cats[int(subsector['id'])] = [
-                sector['name'], subsector['name']]
+    b = {}  # brand dict
+    r = {'brand': b, 'url': url}  # rating dict
 
-    # correct sector names
-    return dict((sector_id,
-                 [SECTOR_CORRECTIONS.get(cat, cat) for cat in cats])
-                for sector_id, cats in sector_to_cats.iteritems())
+    # grade
+    brand_a = soup.select('dl.brands a')[0]
+    b['brand'] = brand_a.dt.text
+    log.info(u'Brand: {}'.format(b['brand']))
+    rating_span = brand_a.span
+    r['grade'] = rating_span['alt']
+    r['judgment'] = grade_to_judgment(r['grade'])
+    r['description'] = rating_span['title']
+
+    # score
+    score_a = soup.find('a', href='#detailed-report')
+    score_parts = score_a.text.strip().split()
+    r['score'] = int(score_parts[0])
+    r['max_score'] = int(score_parts[-1])
+
+    # company
+    sidebar_final_p = soup.select('#main div')[0].select('p')[-1]
+    info_strs = list(sidebar_final_p.stripped_strings)
+    i = info_strs.index('Brand owner:')
+    b['company'] = info_strs[i + 1]
+
+    # logo URL
+    logo_img = soup.select('div.logobox img')[0]
+    logo_url = urljoin(url, logo_img['src'])
+    # repair poorly urlencoded img param
+    parts = list(urlparse(logo_url))
+    parts[3] = urlencode(parse_qsl(parts[3]))
+    b['logo_url'] = urlunparse(parts)
+
+    # category stuff
+    sectors = correct_sectors(sectors)
+    b['category'] = sectors[-1]
+    for i in range(len(sectors) - 1):
+        yield 'category', dict(parent_category=sectors[i],
+                               category=sectors[i + 1])
+
+    # twitter handle
+    for a in soup.select('ol#do-something a'):
+        if a.text.strip().startswith('Nudge '):
+            nudge_url = urljoin(url, a['href'])
+            b['twitter_handle'] = (
+                scrape_twitter_handle_from_nudge_url(nudge_url))
+
+    yield 'brand_rating', r
+
+
+def scrape_twitter_handle_from_nudge_url(url):
+    soup = scrape_soup(url)
+
+    twitter_p = soup.select('#email_tpl div p')[0]
+    for word in twitter_p.text.split():
+        if word.startswith('@'):
+            return word
 
 
 def correct_sectors(sectors):
     return [SECTOR_CORRECTIONS.get(sector, sector)
             for sector in sectors]
-
-def scrape_brands(sector_id):
-    brands_json = scrape_json(
-        BRANDS_URL_FMT.format(API_KEY, sector_id))
-
-    return {int(b['id']): b['brandname'] for b in brands_json}
-
-
-def scrape_brand(brand_id, cat_hierarchy):
-    b = {}
-    r = {'brand': b}
-
-    j = scrape_json(BRAND_URL_FMT.format(API_KEY, brand_id))
-
-    b['brand'] = j['brandname']
-    b['company'] = j['owner']
-
-    # last part of logo URL may contain spaces, unicode
-    logo_url = j['logo']
-    logo_url_parts = logo_url.split('/')
-    logo_url_parts[-1] = quote_plus(logo_url_parts[-1].encode('utf8'))
-    b['logo_url'] = '/'.join(logo_url_parts)
-
-    # just use j['categories'] if there are any, otherwise use last
-    # category in cat_hierarchy
-    # sometimes j['categories'] is full of empty strings
-    j['categories'] = [c for c in j['categories'] if c and c not in BAD_CATS]
-
-    if j['categories']:
-        b['categories'] = j['categories']
-        if cat_hierarchy:
-            for cat in j['categories']:
-                yield 'category', dict(parent_category=cat_hierarchy[-1],
-                                       category=cat)
-    else:
-        b['categories'] = cat_hierarchy[-1:]
-
-    r['url'] = j['url']
-
-    r['score'] = int(j['score'])
-    r['max_score'] = int(j['score_total'])
-
-    r['grade'] = score_to_grade(r['score'], r['max_score'])
-    r['judgment'] = grade_to_judgment(r['grade'])
-
-    yield 'brand_rating', r
-
-
-def scrape_campaign_from_landing():
-    soup = scrape_soup(LANDING_URL)
-
-    c = {}
-
-    c['goal'], c['campaign'] = soup.title.text.split('|')[-2:]
-    c['goal'] = c['goal'].capitalize()  # for consistency
-    c['url'] = LANDING_URL
-
-    # there isn't a copyright notice on the page!
-    c['donate_url'] = urljoin(LANDING_URL,
-                              soup.find('a', text='Support us')['href'])
-    c['facebook_url'] = scrape_facebook_url(soup)
-    c['twitter_handle'] = scrape_twitter_handle(soup)
-
-    return c
-
-
-def score_to_grade(score, max_score):
-    percent = 100 * score / max_score
-
-    # grades are assigned based on percentage ratings; see:
-    # http://rankabrand.org/home/How-we-work
-    #
-    # The round up; for example, a 35% earns a C, not a D. See:
-    # http://rankabrand.org/beer-brands/Heineken (7 out of 20)
-    if percent >= 75:
-        return 'A'
-    elif percent >= 55:
-        return 'B'
-    elif percent >= 35:
-        return 'C'
-    elif percent >= 15:
-        return 'D'
-    else:
-        return 'E'  # not F

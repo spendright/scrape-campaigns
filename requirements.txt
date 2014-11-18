@@ -1,5 +1,1 @@
-Unidecode==0.04.9
-beautifulsoup4==4.1.3
-dumptruck==0.1.6
-html5lib==0.90  # used by beautifulsoup4
-mechanize==0.2.5  # used by b_corp scraper
+-r submodules/srs/requirements.txt

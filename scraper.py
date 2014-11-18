@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#   Copyright 2014 David Marin
+#   Copyright 2014 SpendRight, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -30,8 +30,12 @@ log = logging.getLogger('scraper')
 
 
 # scrape these campaigns no more often than this limit
-# morph.io scrapes nightly by default
+# morph.io scrapes nightly by default.
 CAMPAIGN_SCRAPE_FREQUENCY = {
+    'b_corp': timedelta(hours=12),
+    'climate_counts': timedelta(hours=12),
+    'free2work': timedelta(hours=12),
+    'hrc': timedelta(hours=12),
     'rankabrand': timedelta(days=6.1),  # aim for weekly
 }
 

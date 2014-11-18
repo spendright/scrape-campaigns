@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#   Copyright 2014 Spendright, Inc.
+#   Copyright 2014 SpendRight, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ import re
 from collections import defaultdict
 from urlparse import urljoin
 
-from unidecode import unidecode
-
-from srs.norm import WHITESPACE_RE
+from srs.norm import smunch
 from srs.scrape import scrape_soup
 
 
@@ -68,6 +66,9 @@ BRAND_CORRECTIONS = {  # hilarious
     'Siemans': 'Siemens',
 }
 
+SMUNCHED_BRAND_CORRECTIONS = dict(
+    (smunch(bad), smunch(good))
+    for bad, good in BRAND_CORRECTIONS.iteritems())
 
 IGNORE_TWITTER_HANDLES = {
     '@BritishAirways',  # actually @British_Airways
@@ -282,13 +283,3 @@ def scrape_description_and_judgment(status_path):
     desc = STATUS_PATH_RE.match(status_path).group(1)
     desc = desc[0].upper() + desc[1:]  # capitalize first letter
     return desc, DESCRIPTION_TO_JUDGMENT[desc]
-
-
-def smunch(s):
-    """Normalize s and remove whitespace."""
-    return WHITESPACE_RE.sub('', unidecode(s).lower())
-
-
-SMUNCHED_BRAND_CORRECTIONS = dict(
-    (smunch(bad), smunch(good))
-    for bad, good in BRAND_CORRECTIONS.iteritems())
