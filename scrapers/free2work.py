@@ -69,14 +69,12 @@ CAMPAIGN = {
 
 # name and assesment scope field may have a suffix that indicates scope
 # information, or is useless
-
-# TODO: Non-Certified should just be default scope
 SUFFIXES = {
     ' (FLO)': {'scope': 'Fair Trade'},
     ' (Fair Trade)': {'scope': 'Fair Trade'},
     ' (Fairtrade)': {'scope': 'Fair Trade'},
-    ' (General)': {'scope': 'Non-Certified'},
-    ' (Non-Certified)': {'scope': 'Non-Certified'},
+    ' (General)': {},
+    ' (Non-Certified)': {},
     ' (RAC)': {'scope': 'Rainforest Alliance Certified'},
     ' (Rainforest Alliance)': {'scope': 'Rainforest Alliance Certified'},
     ' (UTZ)': {'scope': 'UTZ Certified'},
@@ -92,7 +90,7 @@ SUFFIXES = {
     ': ---- Fairtrade Certified Products': {'scope': 'Fair Trade'},
     # from Allegro Coffee (General)
     # http://widgets.free2work.org/frontend_ratings/public_view/1099
-    ' General (Beverages)': {'scope': 'Non-Certified'},
+    ' General (Beverages)': {},
     # on Darn Tough, clear from company name
     # http://widgets.free2work.org/frontend_ratings/public_view/1081
     ' (Australia)': {},
@@ -152,7 +150,7 @@ COMPANY_CORRECTIONS = {
 
 # weird formatting for 1-800-Flowers.com
 COMPANY_PREFIXES = {
-    'General Line (': {'scope': 'Non-Certified'},
+    'General Line (': {},
     'Fairtrade Products (': {'scope': 'Fair Trade'},
 }
 
