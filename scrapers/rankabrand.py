@@ -21,10 +21,12 @@ from urlparse import urljoin
 from urlparse import urlparse
 from urlparse import urlunparse
 
-from srs.scrape import scrape_soup
+from dateutil.parser import parse as parse_date
 
+from srs.iso_8601 import to_iso_date
 from srs.rating import grade_to_judgment
 from srs.scrape import scrape_facebook_url
+from srs.scrape import scrape_soup
 from srs.scrape import scrape_twitter_handle
 
 # for now, we're just scraping the english-language site
@@ -38,6 +40,8 @@ SECTOR_CORRECTIONS = {
 }
 
 SEE_RE = re.compile(r'(See .*?\.\s*|\s*\(see .*?\))')
+
+DATE_RE = re.compile(r'\d+\s+\w+\s+\d+')
 
 
 log = getLogger(__name__)
@@ -167,8 +171,17 @@ def scrape_brand(url, sectors, soup=None):
             b['twitter_handle'] = (
                 scrape_twitter_handle_from_nudge_url(nudge_url))
 
+    # last edited date
+    brand_change_label = soup.find('span', class_='brand_change_label')
+    m = DATE_RE.search(brand_change_label.text)
+    if m:
+        edit_date = parse_date(m.group(0))
+        r['date'] = to_iso_date(edit_date)
+
+    # rating scraped!
     yield 'brand_rating', r
 
+    # include claims from sustainability report
     for claim in scrape_claims(soup):
         claim['company'] = b['company']
         claim['brand'] = b['brand']

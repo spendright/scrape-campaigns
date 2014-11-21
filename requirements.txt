@@ -1,1 +1,2 @@
 -r submodules/srs/requirements.txt
+python-dateutil==1.5
