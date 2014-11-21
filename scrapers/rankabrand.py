@@ -11,7 +11,10 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-import logging
+from __future__ import unicode_literals
+
+import re
+from logging import getLogger
 from urllib import urlencode
 from urlparse import parse_qsl
 from urlparse import urljoin
@@ -34,8 +37,10 @@ SECTOR_CORRECTIONS = {
     'Premium brands': 'Premium Apparel',
 }
 
+SEE_RE = re.compile(r'(See .*?\.\s*|\s*\(see .*?\))')
 
-log = logging.getLogger(__name__)
+
+log = getLogger(__name__)
 
 
 def scrape_campaign(url=URL):
@@ -163,6 +168,53 @@ def scrape_brand(url, sectors, soup=None):
                 scrape_twitter_handle_from_nudge_url(nudge_url))
 
     yield 'brand_rating', r
+
+    for claim in scrape_claims(soup):
+        claim['company'] = b['company']
+        claim['brand'] = b['brand']
+        yield 'brand_claim', claim
+
+
+def scrape_claims(soup):
+    """Scrape claims from the Sustainability report section
+    of the brand page. You'll have to add company/brand yourself"""
+    for section in soup.select('div.brand-report-section'):
+        area = section.h4.text.strip()
+        if area.startswith('Questions about '):
+            area = area[len('Questions about '):]
+
+        for tr in section.select('tr'):
+            question = tr.select('td.question')[0].text
+
+            status_img_src = tr.select('td.status img')[0]['src']
+            judgment = status_img_src_to_judgment(status_img_src)
+
+            remark = tr.select('td.remark')[0].text
+
+            for claim in extract_claims(remark, question):
+                yield dict(area=area,
+                           question=question,
+                           judgment=judgment,
+                           claim=claim)
+
+
+def extract_claims(remark, question=None):
+    """Extract and clarify claims from a remark in the sustainability report.
+    """
+    # references aren't meaningful outside the page
+    remark = SEE_RE.sub('', remark).strip()
+
+    if remark:
+        yield remark
+
+
+def status_img_src_to_judgment(src):
+    if 'YES' in src:
+        return 1
+    elif 'NO' in src:
+        return -1
+    else:
+        return 0
 
 
 def scrape_twitter_handle_from_nudge_url(url):
