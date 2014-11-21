@@ -69,7 +69,8 @@ def scrape_campaign():
             for record in scrape_industry(industry_url, industry):
                 yield record
 
-
+# TODO: yield company, industry, url so we can scrape companies (debugging)
+# without knowing their industry
 def scrape_industry(url, industry):
     # whitelist of industries
     if 'MORPH_B_CORP_INDUSTRIES' in environ:
@@ -165,16 +166,34 @@ def do_corp(url, industry):
     # http://www.bcorporation.net/community/one-village-coffee-llc
     # http://www.bcorporation.net/community/feelgoodz-llc
 
+    # turn Company Highlights into claims
     ch_section = soup.find(
         'section', class_='field-name-field-company-highlights')
     if ch_section:
+        claims = []
+
         for p in ch_section.select('p'):
-            for s in p.stripped_strings:
-                if len(s) > 15:  # exclude section headers
-                    for claim in s.split(';'):
-                        yield 'company_claim', dict(
-                            company=c['company'],
-                            claim=claim,
-                            judgment=1)
+            children = list(p.children)
+
+            # stuff like <strong>Environment</strong> claim1; claim2
+            if len(children) == 2:
+                title, content = children
+                if (getattr(title, 'name') == 'strong' and
+                    isinstance(content, unicode)):
+                    claims.extend(content.lstrip(':').split(';'))
+
+            # stuff like <strong>Some award 2014</strong>
+            elif len(children) == 1:
+                content = children[0]
+                if getattr(content, 'name'):
+                    claims.extend(content.stripped_strings)
+
+        for claim in claims:
+            claim = claim.strip()
+            if claim:
+                yield 'company_claim', dict(
+                    company=c['company'],
+                    claim=claim,
+                    judgment=1)
 
     yield 'company_rating', r
