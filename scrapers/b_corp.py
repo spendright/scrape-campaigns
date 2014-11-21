@@ -172,21 +172,12 @@ def do_corp(url, industry):
     if ch_section:
         claims = []
 
-        for p in ch_section.select('p'):
-            children = list(p.children)
-
-            # stuff like <strong>Environment</strong> claim1; claim2
-            if len(children) == 2:
-                title, content = children
-                if (getattr(title, 'name') == 'strong' and
-                    isinstance(content, unicode)):
-                    claims.extend(content.lstrip(':').split(';'))
-
-            # stuff like <strong>Some award 2014</strong>
-            elif len(children) == 1:
-                content = children[0]
-                if getattr(content, 'name'):
-                    claims.extend(content.stripped_strings)
+        for strong in ch_section.select('strong'):
+            if isinstance(strong.nextSibling, unicode):
+                # the colon for the heading isn't inside <strong>
+                claims.extend(strong.nextSibling.lstrip(':').split(';'))
+            elif strong.nextSibling is None:
+                claims.extend(strong.stripped_strings)
 
         for claim in claims:
             claim = claim.strip()
