@@ -165,4 +165,16 @@ def do_corp(url, industry):
     # http://www.bcorporation.net/community/one-village-coffee-llc
     # http://www.bcorporation.net/community/feelgoodz-llc
 
+    ch_section = soup.find(
+        'section', class_='field-name-field-company-highlights')
+    if ch_section:
+        for p in ch_section.select('p'):
+            for s in p.stripped_strings:
+                if len(s) > 15:  # exclude section headers
+                    for claim in s.split(';'):
+                        yield 'company_claim', dict(
+                            company=c['company'],
+                            claim=claim,
+                            judgment=1)
+
     yield 'company_rating', r
