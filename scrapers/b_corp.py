@@ -161,7 +161,7 @@ def do_corp(url, industry):
     if logo_img:
         c['logo_url'] = urljoin(url, logo_img['src'])
 
-    # TODO: add store_url. This is in the lower-left box,
+    # TODO: add store_url. This is in the lower-right box,
     # but not consistently formatted. Examples:
     # http://www.bcorporation.net/community/one-village-coffee-llc
     # http://www.bcorporation.net/community/feelgoodz-llc
