@@ -32,6 +32,10 @@ CAMPAIGN = {
 
 CATEGORY = 'Apparel'  # every company is in this category
 
+# based on home page
+CLAIM = ('Signed the Accord on Fire and Building Safety In Bangladesh, a'
+         ' legally binding agreement.')
+
 log = logging.getLogger(__name__)
 
 
@@ -77,8 +81,12 @@ def scrape_signatories_page(signatories_url):
         # each subsequent country
         for b in col.findAll('b'):
             for company in _scrape_companies_from_b(b):
-                yield 'company_rating', {'company': company, 'judgment': 1,
-                                         'categories': [CATEGORY]}
+                yield 'company_rating', dict(company=company,
+                                             judgment=1,
+                                             categories=[CATEGORY])
+                yield 'company_claim', dict(company=company,
+                                            judgment=1,
+                                            claim=CLAIM)
 
 
 def _scrape_companies_from_b(b):
