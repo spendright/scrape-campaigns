@@ -56,6 +56,8 @@ MAX_SCORE = 100
 
 STATUS_PATH_RE = re.compile(r'.*score_(.*)\.gif$')
 
+SUBSCORE_RE = re.compile(r'^\s*[^:]+:\s+(\d)+/(\d)+ points')
+
 BRAND_CORRECTIONS = {  # hilarious
     'Climfast': 'Slimfast',
     'Gatoraide': 'Gatorade',
@@ -277,6 +279,21 @@ def scrape_company(url, known_brands):
 
     yield 'company', c
     yield 'company_rating', r
+
+    # parse claims
+    for b in soup.find(id='company_score').parent.select('b'):
+        m = SUBSCORE_RE.match(b.text)
+        if m and isinstance(b.next_sibling, unicode):
+            score = int(m.group(1))
+            max_score = int(m.group(2))
+            claim = b.next_sibling
+
+            # TODO: infer judgment from claim and/or score
+            # "withholding judgment" for now.
+            yield 'company_claim', dict(company=company,
+                                        claim=claim,
+                                        score=score,
+                                        max_score=max_score)
 
 
 def scrape_description_and_judgment(status_path):
