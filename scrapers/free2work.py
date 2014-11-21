@@ -13,6 +13,8 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import unicode_literals
+
 import json
 import logging
 import os
@@ -45,6 +47,8 @@ DUPLICATE_RATINGS = [1095]
 
 JSON_CALLBACK_RE = re.compile('jsonCallback\((.*)\)')
 
+CLAIM_AREA_RE = re.compile(r'([A-Z][A-Z ]*):')
+
 # TODO: scrape this from the page
 CAMPAIGN = {
     'campaign': 'Free2Work',
@@ -52,7 +56,7 @@ CAMPAIGN = {
     'url': 'http://www.free2work.org/',
     'author': 'Not for Sale',
     'contributors': 'International Labor Rights Forum, Baptist World Aid',
-    'copyright': u'©2010-2014 NOT FOR SALE',
+    'copyright': '©2010-2014 NOT FOR SALE',
     'author_url': 'http://www.notforsalecampaign.org/',
     # donation form for Free2Work is non-functional so donate to NFS
     #'donate_url': 'https://nfs.webconnex.com/free2work',
@@ -65,6 +69,8 @@ CAMPAIGN = {
 
 # name and assesment scope field may have a suffix that indicates scope
 # information, or is useless
+
+# TODO: Non-Certified should just be default scope
 SUFFIXES = {
     ' (FLO)': {'scope': 'Fair Trade'},
     ' (Fair Trade)': {'scope': 'Fair Trade'},
@@ -187,7 +193,7 @@ def scrape_rating_page(rating_id):
 
     # handle header field (brand)
     brand = soup.select('.rating-name')[0].text.strip()
-    log.info(u'Rating {}: {}'.format(rating_id, brand))
+    log.info('Rating {}: {}'.format(rating_id, brand))
 
     # get logo image
     logo_url = None
@@ -208,7 +214,7 @@ def scrape_rating_page(rating_id):
     }
 
     scope_span = h3_spans['scope']
-    scope_table = scope_span.findParent('table')
+    scope_table = scope_span.find_parent('table')
 
     scope_tds = scope_table.select('tr td[colspan=3]')
 
@@ -265,11 +271,20 @@ def scrape_rating_page(rating_id):
                 date = str(year)
                 break
 
-    # handle overall grade
+    # handle grades
     gb_span = h3_spans['grade breakdown']
-    gb_tr = gb_span.findParent('tr').findNextSibling('tr')
+    gb_tr = gb_span.find_parent('tr').find_next_sibling('tr')
 
-    d['grade'] = gb_tr.select('span.grade_circle.large')[0].text
+    area_to_grade = {}
+    for grade_span in gb_tr.select('span.grade_circle'):
+        area = grade_span.next_sibling
+        if not isinstance(area, unicode):
+            area = area.text  # "Overall" is bolded, others are not
+        area = area.lower().strip()
+        grade = grade_span.text
+        area_to_grade[area] = grade
+
+    d['grade'] = area_to_grade['overall']
 
     # convert to judgment
     d['judgment'] = grade_to_judgment(d['grade'])
@@ -283,6 +298,41 @@ def scrape_rating_page(rating_id):
             yield 'company', dict(
                 company=d['company'], logo_url=logo_url)
 
+    # work out claims
+    claims = []
+
+    about_span = h3_spans['about this rating']
+    if about_span:  # not all companies have this
+        about_text = [
+            s for s in about_span.find_parent('tbody').stripped_strings
+            if CLAIM_AREA_RE.search(s)][0]
+
+        # about_text looks like POLICIES: stuff. TRANSPARENCY: more stuff ...
+        # need to convert this to area -> claim
+
+        areas = []
+        starts = []
+        ends = []
+
+        for m in CLAIM_AREA_RE.finditer(about_text):
+            areas.append(m.group(1).lower())
+            starts.append(m.start())
+            ends.append(m.end())
+
+        for area, start, end in zip(areas, ends, starts[1:] + [-1]):
+            claim = about_text[start:end]
+
+            # TODO: If claim starts with "Brand", trim it off and capitalize
+            # next word (most of these are really company ratings)
+
+            # TODO: infer judgment
+
+            # keep grade, area for now, for debugging
+            grade = area_to_grade[area]
+
+            claims.append(dict(
+                company=company, claim=claim, grade=grade, area=area))
+
     # rate company or brands as appropriate
     if 'rating_brands' in d:
         rating_brands = d.pop('rating_brands')
@@ -290,12 +340,18 @@ def scrape_rating_page(rating_id):
             rating = d.copy()
             rating['brand'] = rating_brand
             yield 'brand_rating', rating
+
+            for claim in claims:
+                claim = claim.copy()
+                claim['brand'] = rating_brand
+                yield 'brand_claim', claim
     else:
         rating = d.copy()
         if 'brand' in rating:
             rating['brands'] = [rating.pop('brand')]
         yield 'company_rating', rating
-
+        for claim in claims:
+            yield 'company_claim', claim
 
 
 def to_iso_date(dt):
@@ -341,7 +397,7 @@ def scrape_rating_ids():
     rating_ids = set()
 
     for industry_id, industry_name in sorted(scrape_industries().items()):
-        log.info(u'Industry {}: {}'.format(industry_id, industry_name))
+        log.info('Industry {}: {}'.format(industry_id, industry_name))
         rating_ids.update(scrape_rating_ids_for_industry(industry_id))
 
     return sorted(rating_ids)
