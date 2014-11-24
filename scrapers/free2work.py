@@ -301,9 +301,8 @@ def scrape_rating_page(rating_id):
 
     about_span = h3_spans['about this rating']
     if about_span:  # not all companies have this
-        about_text = [
-            s for s in about_span.find_parent('tbody').stripped_strings
-            if CLAIM_AREA_RE.search(s)][0]
+        about_text = about_span.find_parent(
+            'tbody').find_next_sibling('tbody').text
 
         # about_text looks like POLICIES: stuff. TRANSPARENCY: more stuff ...
         # need to convert this to area -> claim
