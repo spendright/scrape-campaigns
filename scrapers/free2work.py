@@ -299,7 +299,7 @@ def scrape_rating_page(rating_id):
     # work out claims
     claims = []
 
-    about_span = h3_spans['about this rating']
+    about_span = h3_spans.get('about this rating')
     if about_span:  # not all companies have this
         about_text = about_span.find_parent(
             'tbody').find_next_sibling('tbody').text
