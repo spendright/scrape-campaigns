@@ -52,6 +52,7 @@ RANK_CLASS_TO_JUDGMENT = {
 # all companies are in this category
 CATEGORY = 'Electronics'
 
+
 log = getLogger(__name__)
 
 
@@ -130,11 +131,22 @@ def scrape_campaign():
 
         detail_soup = BeautifulSoup(details['detail'])
         claim_lis = detail_soup.select('li')
+
+        # First two bullet points are categories and a description
+        # of the company's ranking (reversed for Nokia)
+        # Last bullet point is what the company can do to improve its score.
+        claim_lis = claim_lis[2:-1]
+
         for i, claim_li in enumerate(claim_lis):
             # TODO: infer judgment
+            #
+            # "but" -> 0
+            # "not" -> -1
+            # "unresponsive" -> -1
+            # (everything else) -> 1
 
-            # TODO: probably want to dump first and second claims,
-            # so for now, track index (abusing "rank" field for this)
+            # TODO: clarify the Public Private Alliance and the Hope program
+
             yield 'company_claim', dict(company=company,
                                         claim=claim_li.text,
                                         rank=i + 1,
