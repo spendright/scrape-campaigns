@@ -41,6 +41,9 @@ GOAL = 'Benefit communities, not warlords'
 CATEGORIES_RE = re.compile(r'.* products include (.*?)\.?\s*$')
 CATEGORIES_SEP = re.compile('(?:,(?:\s+and)?\s+|\s+and\s+)')
 
+MIXED_CLAIM_RE = re.compile(r'.*\bbut\b.*', re.I)
+BAD_CLAIM_RE = re.compile(r'.*\b(not|unresponsive)\b.*', re.I)
+
 INT_RE = re.compile('\d+')
 
 RANK_CLASS_TO_JUDGMENT = {
@@ -138,16 +141,22 @@ def scrape_campaign():
         claim_lis = claim_lis[2:-1]
 
         for i, claim_li in enumerate(claim_lis):
-            # TODO: infer judgment
-            #
-            # "but" -> 0
-            # "not" -> -1
-            # "unresponsive" -> -1
-            # (everything else) -> 1
+            claim = claim_li.text
 
-            # TODO: clarify the Public Private Alliance and the Hope program
+            if MIXED_CLAIM_RE.match(claim):
+                judgment = 0
+            elif BAD_CLAIM_RE.match(claim):
+                judgment = -1
+            else:
+                judgment = 1
 
+            # TODO: clarify:
+            # - the Public Private Alliance [for Reponsible Minerals Trade]
+            # - the SEC regulations [Disclosing Use of Conflict Minerals]
+            # - OECD guidance [for Responsible Supply Chains of Minerals
+            # from Conflict-Affected and High-Risk Areas]
+            # - EICC (Electronic Industry Citizenship Coalition)
+            # - Solutions for Hope [to source clean minerals from Congo]
             yield 'company_claim', dict(company=company,
-                                        claim=claim_li.text,
-                                        rank=i + 1,
-                                        num_ranked=len(claim_lis))
+                                        claim=claim,
+                                        judgment=judgment)
