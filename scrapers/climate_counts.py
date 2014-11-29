@@ -18,6 +18,7 @@ import re
 from collections import defaultdict
 from urlparse import urljoin
 
+from srs.claim import claim_to_judgment
 from srs.norm import smunch
 from srs.scrape import scrape_soup
 
@@ -56,7 +57,7 @@ MAX_SCORE = 100
 
 STATUS_PATH_RE = re.compile(r'.*score_(.*)\.gif$')
 
-SUBSCORE_RE = re.compile(r'^\s*[^:]+:\s+(\d)+/(\d)+ points')
+SUBSCORE_RE = re.compile(r'^\s*([^:]+):\s+(\d+)/(\d+) points')
 
 BRAND_CORRECTIONS = {  # hilarious
     'Climfast': 'Slimfast',
@@ -74,7 +75,7 @@ SMUNCHED_BRAND_CORRECTIONS = dict(
 
 IGNORE_TWITTER_HANDLES = {
     '@BritishAirways',  # actually @British_Airways
-    '@ShakleeUpdates',  # now ShakleeHQ
+    '@ShakleeUpdates',  # now @ShakleeHQ
     '@UPS_News',  # ignore in favor of @UPS
     '@theUPSstore_PR',  # ignore in favor of @UPS
     '@',  # derp
@@ -284,14 +285,18 @@ def scrape_company(url, known_brands):
     for b in soup.find(id='company_score').parent.select('b'):
         m = SUBSCORE_RE.match(b.text)
         if m and isinstance(b.next_sibling, unicode):
-            score = int(m.group(1))
-            max_score = int(m.group(2))
+            area = m.group(1)
+            score = int(m.group(2))
+            max_score = int(m.group(3))
             claim = b.next_sibling
 
-            # TODO: infer judgment from claim and/or score
-            # "withholding judgment" for now.
+            judgment = claim_to_judgment(claim)
+
             yield 'company_claim', dict(company=company,
                                         claim=claim,
+                                        judgment=judgment,
+                                        # for debugging:
+                                        area=area,
                                         score=score,
                                         max_score=max_score)
 
