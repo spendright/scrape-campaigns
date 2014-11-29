@@ -20,6 +20,8 @@ from urllib import urlencode
 
 from bs4 import BeautifulSoup
 
+from srs.claim import claim_to_judgment
+from srs.claim import clarify_claim
 from srs.scrape import scrape_copyright
 from srs.scrape import scrape_facebook_url
 from srs.scrape import scrape_json
@@ -37,12 +39,22 @@ DETAILS_URL = 'http://www.raisehopeforcongo.org/apps/corank/include/db.php'
 # benefiting communities instead of warlords"
 GOAL = 'Benefit communities, not warlords'
 
-
 CATEGORIES_RE = re.compile(r'.* products include (.*?)\.?\s*$')
 CATEGORIES_SEP = re.compile('(?:,(?:\s+and)?\s+|\s+and\s+)')
 
-MIXED_CLAIM_RE = re.compile(r'.*\bbut\b.*', re.I)
-BAD_CLAIM_RE = re.compile(r'.*\b(not|unresponsive)\b.*', re.I)
+CLAIM_CLARIFICATIONS = [
+    (re.compile(r'\bSolutions for Hope\s*(project|program)?\b', re.I),
+     'to source clean minerals from Congo'),
+    (re.compile(r'\bthe Public Private Alliance\b', re.I),
+     'for Reponsible Minerals Trade'),
+    (re.compile(r'\bSEC regulations\b', re.I),
+     'Disclosing Use of Conflict Minerals'),
+    (re.compile(r'\bOECD guidance\b', re.I),
+     'for Responsible Supply Chains of Minerals'
+     'from Conflict-Affected and High-Risk Areas'),
+    (re.compile(r'\bEICC\b'),
+     '(Electronic Industry Citizenship Coalition)'),
+]
 
 INT_RE = re.compile('\d+')
 
@@ -143,20 +155,10 @@ def scrape_campaign():
         for i, claim_li in enumerate(claim_lis):
             claim = claim_li.text
 
-            if MIXED_CLAIM_RE.match(claim):
-                judgment = 0
-            elif BAD_CLAIM_RE.match(claim):
-                judgment = -1
-            else:
-                judgment = 1
+            judgment = claim_to_judgment(claim)
 
-            # TODO: clarify:
-            # - the Public Private Alliance [for Reponsible Minerals Trade]
-            # - the SEC regulations [Disclosing Use of Conflict Minerals]
-            # - OECD guidance [for Responsible Supply Chains of Minerals
-            # from Conflict-Affected and High-Risk Areas]
-            # - EICC (Electronic Industry Citizenship Coalition)
-            # - Solutions for Hope [to source clean minerals from Congo]
+            claim = clarify_claim(claim, CLAIM_CLARIFICATIONS)
+
             yield 'company_claim', dict(company=company,
                                         claim=claim,
                                         judgment=judgment)
