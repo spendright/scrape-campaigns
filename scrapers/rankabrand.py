@@ -39,7 +39,7 @@ SECTOR_CORRECTIONS = {
     'Premium brands': 'Premium Apparel',
 }
 
-SEE_RE = re.compile(r'(See .*?\.\s*|\s*\(see .*?\))')
+SEE_RE = re.compile(r'(\s*\(([Ss]ee |p\.).*?\)|See .*?\.\s*)')
 
 DATE_RE = re.compile(r'\d+\s+\w+\s+\d+')
 
