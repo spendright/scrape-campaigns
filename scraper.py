@@ -20,6 +20,7 @@ their names on the command line (e.g. python scraper.py avon kraft).
 """
 import logging
 from argparse import ArgumentParser
+from datetime import datetime
 from datetime import timedelta
 from os import environ
 
@@ -30,13 +31,16 @@ log = logging.getLogger('scraper')
 
 
 # scrape these campaigns no more often than this limit
-# morph.io scrapes nightly by default.
-CAMPAIGN_SCRAPE_FREQUENCY = {
-    'b_corp': timedelta(hours=12),
-    'climate_counts': timedelta(hours=12),
-    'free2work': timedelta(hours=12),
-    'hrc': timedelta(hours=12),
-    'rankabrand': timedelta(days=6.1),  # aim for weekly
+DEFAULT_SCRAPE_FREQ = timedelta(weeks=1)
+
+# scrape rankabrand even less often than that
+CAMPAIGN_TO_SCRAPE_FREQ = {
+    'rankabrand': timedelta(weeks=2),
+}
+
+# use this to force scrapers to re-run (e.g. because code has changed)
+CAMPAIGN_CHANGED_SINCE = {
+    'rankabrand': datetime(2014, 12, 3),
 }
 
 
@@ -59,12 +63,14 @@ def main():
     run_scrapers(get_records_from_campaign_scraper,
                  scraper_ids=campaigns,
                  skip_scraper_ids=skip_campaigns,
-                 scraper_to_freq=CAMPAIGN_SCRAPE_FREQUENCY)
+                 default_freq=DEFAULT_SCRAPE_FREQ,
+                 scraper_to_freq=CAMPAIGN_TO_SCRAPE_FREQ,
+                 scraper_to_last_changed=CAMPAIGN_CHANGED_SINCE)
 
 
 def parse_args(args=None):
     parser = ArgumentParser()
-    parser.add_argument('campaigns', metavar='N', nargs='*',
+    parser.add_argument('campaigns', metavar='campaign_id', nargs='*',
                         help='whitelist of campaigns to scrape')
     parser.add_argument(
         '-v', '--verbose', dest='verbose', default=False, action='store_true',
