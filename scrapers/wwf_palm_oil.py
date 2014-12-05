@@ -50,9 +50,7 @@ def scrape_campaign():
     log.info('Solutions page')
     solutions_soup = scrape_soup(SOLUTIONS_URL)
 
-    scorecard_a = solutions_soup.find(
-        'div', class_='right-column').find(
-            'a', text=HOW_SCORED_RE)
+    scorecard_a = solutions_soup.find('a', text=HOW_SCORED_RE)
 
     campaign_url = urljoin(SOLUTIONS_URL, scorecard_a['href'])
 
