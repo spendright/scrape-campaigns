@@ -23,6 +23,8 @@ from urlparse import urlunparse
 
 from dateutil.parser import parse as parse_date
 
+from srs.claim import clarify_claim
+from srs.claim import ltrim_sentence
 from srs.iso_8601 import to_iso_date
 from srs.rating import grade_to_judgment
 from srs.scrape import scrape_facebook_url
@@ -43,6 +45,20 @@ SEE_RE = re.compile(r'(\s*\(([Ss]ee |p\.).*?\)|See .*?\.\s*)')
 
 DATE_RE = re.compile(r'\d+\s+\w+\s+\d+')
 
+# hard to handle multi-part claims out of context
+BAD_CLAIM_RE = re.compile(r'.*1\. .*2\. .*3\. ')
+
+# just replace this
+CoC_RE = re.compile(r'\bCoC\b')
+
+CLAIM_CLARIFICATIONS = [
+    (re.compile(r'\bBSCI\b'),
+     '(Business Social Compliance Initiative)'),
+    (re.compile(r'\bCoC\b'), '(Code of Conduct)'),
+    (re.compile(r'\bEICC\b'),
+     '(Electronic Industry Citizenship Coalition)'),
+    (re.compile(r'\bFLA\b'), '(Fair Labor Association)'),
+]
 
 log = getLogger(__name__)
 
@@ -183,13 +199,11 @@ def scrape_brand(url, sectors, soup=None):
     yield 'brand_rating', r
 
     # include claims from sustainability report
-    for claim in scrape_claims(url, soup):
-        claim['company'] = b['company']
-        claim['brand'] = b['brand']
+    for claim in scrape_claims(url, b['company'], b['brand'], soup):
         yield 'brand_claim', claim
 
 
-def scrape_claims(url, soup=None):
+def scrape_claims(url, company, brand, soup=None):
     """Scrape claims from the Sustainability report section
     of the brand page. You'll have to add company/brand yourself"""
     if soup is None:
@@ -210,22 +224,36 @@ def scrape_claims(url, soup=None):
 
             remark = tr.select('td.remark')[0].text
 
-            for claim in extract_claims(remark, question):
+            for claim in extract_claims(remark, company, brand, question):
                 yield dict(area=area,
                            question=question,
                            judgment=judgment,
                            claim=claim,
+                           company=company,
+                           brand=brand,
                            url=claim_url)
 
 
-def extract_claims(remark, question=None):
+def extract_claims(remark, company, brand, question=None):
     """Extract and clarify claims from a remark in the sustainability report.
     """
     # references aren't meaningful outside the page
     remark = SEE_RE.sub('', remark).strip()
 
-    if remark:
-        yield remark
+    for claim in [remark]:  # TODO: split into sentences if appropriate
+        claim = remark
+
+        if BAD_CLAIM_RE.match(claim):
+            continue
+
+        claim = clarify_claim(claim, CLAIM_CLARIFICATIONS)
+
+        claim = ltrim_sentence(claim, [company, brand])
+
+        claim = claim.strip()
+
+        if claim:
+            yield claim
 
 
 def status_img_src_to_judgment(src):
