@@ -22,6 +22,8 @@ import re
 
 from bs4 import BeautifulSoup
 
+from srs.claim import claim_to_judgment
+from srs.claim import split_into_sentences
 from srs.scrape import scrape
 from srs.scrape import scrape_soup
 from srs.rating import grade_to_judgment
@@ -48,6 +50,12 @@ DUPLICATE_RATINGS = [1095]
 JSON_CALLBACK_RE = re.compile('jsonCallback\((.*)\)')
 
 CLAIM_AREA_RE = re.compile(r'([A-Z][A-Z ]*):')
+
+POINTLESS_CLAIM_RE = re.compile(r'^[\.\s]*$')
+
+CLAIM_NOT_GOOD_RE = re.compile(
+    r'.*\b(0|1-25)%.*\bsuppliers\b.*\bmonitored\b.*', re.I)
+
 
 # TODO: scrape this from the page
 CAMPAIGN = {
@@ -317,18 +325,13 @@ def scrape_rating_page(rating_id):
             ends.append(m.end())
 
         for area, start, end in zip(areas, ends, starts[1:] + [-1]):
-            claim = about_text[start:end]
+            area_claim = about_text[start:end]
 
-            # TODO: If claim starts with "Brand", trim it off and capitalize
-            # next word (most of these are really company ratings)
+            for claim in extract_claims(area_claim):
+                judgment = judge_claim(claim)
 
-            # TODO: infer judgment
-
-            # keep grade, area for now, for debugging
-            grade = area_to_grade[area]
-
-            claims.append(dict(
-                company=company, claim=claim, grade=grade, area=area))
+                claims.append(
+                    dict(company=company, claim=claim, judgment=judgment))
 
     # rate company or brands as appropriate
     if 'rating_brands' in d:
@@ -416,3 +419,32 @@ def scrape_campaign():
 
         for row_type, row in scrape_rating_page(rating_id):
             yield row_type, row
+
+
+
+def extract_claims(raw_claim):
+    for claim in split_into_sentences(raw_claim):
+        if POINTLESS_CLAIM_RE.match(claim):
+            continue
+
+        # if sentence starts with "brand" or "it", remove it, and
+        # capitalize the next letter
+        for prefix in ('Brand ', 'It ', 'However '):
+            if claim.startswith(prefix):
+                i = len(prefix)
+                claim = claim[i:i + 1].upper() + claim[i + 1:]
+
+        yield claim
+
+
+def judge_claim(claim):
+    """Process claim text, and handle some special cases."""
+    judgment = claim_to_judgment(claim)
+
+    if judgment != 0 and CLAIM_NOT_GOOD_RE.match(claim):
+        judgment = -1
+
+    if judgment == 1 and '%' in claim and '100%' not in claim:
+        judgment = 0
+
+    return judgment
