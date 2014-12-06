@@ -42,8 +42,8 @@ CAMPAIGN_TO_SCRAPE_FREQ = {
 # this is supposed to be UTC time; if using a date, err toward the future
 CAMPAIGN_CHANGED_SINCE = {
     'rankabrand': datetime(2014, 12, 3),
-    'free2work': datetime(2014, 12, 5),
-    'climate_counts': datetime(2014, 12, 5),
+    'free2work': datetime(2014, 12, 6),
+    'climate_counts': datetime(2014, 12, 6),
 }
 
 
