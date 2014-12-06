@@ -31,7 +31,7 @@ log = logging.getLogger('scraper')
 
 
 # scrape these campaigns no more often than this limit
-DEFAULT_SCRAPE_FREQ = timedelta(weeks=1)
+DEFAULT_SCRAPE_FREQ = timedelta(days=6, hours=1)  # run nightly, scrape weekly
 
 # scrape rankabrand even less often than that
 CAMPAIGN_TO_SCRAPE_FREQ = {
