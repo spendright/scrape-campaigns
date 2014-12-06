@@ -121,6 +121,7 @@ def scrape_subsector(url, sectors, soup=None):
             for record in scrape_subsector(next_pg_url, sectors):
                 yield record
 
+
 def scrape_brand(url, sectors, soup=None):
     if soup is None:
         soup = scrape_soup(url)
@@ -182,15 +183,20 @@ def scrape_brand(url, sectors, soup=None):
     yield 'brand_rating', r
 
     # include claims from sustainability report
-    for claim in scrape_claims(soup):
+    for claim in scrape_claims(url, soup):
         claim['company'] = b['company']
         claim['brand'] = b['brand']
         yield 'brand_claim', claim
 
 
-def scrape_claims(soup):
+def scrape_claims(url, soup=None):
     """Scrape claims from the Sustainability report section
     of the brand page. You'll have to add company/brand yourself"""
+    if soup is None:
+        soup = scrape_soup(url)
+
+    claim_url = url + '#detailed-report'
+
     for section in soup.select('div.brand-report-section'):
         area = section.h4.text.strip()
         if area.startswith('Questions about '):
@@ -208,7 +214,8 @@ def scrape_claims(soup):
                 yield dict(area=area,
                            question=question,
                            judgment=judgment,
-                           claim=claim)
+                           claim=claim,
+                           url=claim_url)
 
 
 def extract_claims(remark, question=None):
