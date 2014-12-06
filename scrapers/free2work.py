@@ -23,6 +23,7 @@ import re
 from bs4 import BeautifulSoup
 
 from srs.claim import claim_to_judgment
+from srs.claim import ltrim_sentence
 from srs.claim import split_into_sentences
 from srs.scrape import scrape
 from srs.scrape import scrape_soup
@@ -429,10 +430,7 @@ def extract_claims(raw_claim):
 
         # if sentence starts with "brand" or "it", remove it, and
         # capitalize the next letter
-        for prefix in ('Brand ', 'It ', 'However '):
-            if claim.startswith(prefix):
-                i = len(prefix)
-                claim = claim[i:i + 1].upper() + claim[i + 1:]
+        claim = ltrim_sentence(claim, ('brand', 'it', 'however'))
 
         yield claim
 

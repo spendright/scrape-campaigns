@@ -21,6 +21,7 @@ from collections import defaultdict
 from urlparse import urljoin
 
 from srs.claim import claim_to_judgment
+from srs.claim import ltrim_sentence
 from srs.claim import split_into_sentences
 from srs.norm import smunch
 from srs.scrape import scrape_soup
@@ -303,6 +304,9 @@ def scrape_company(url, known_brands):
                 claims = list(split_into_sentences(raw_claim))
 
             for claim in claims:
+                # strip company name off claim
+                claim = ltrim_sentence(claim, [company, 'the company'])
+
                 judgment = claim_to_judgment(claim)
 
                 # if score is low, maybe it's not so positive after all
