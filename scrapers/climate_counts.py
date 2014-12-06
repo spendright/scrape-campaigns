@@ -13,12 +13,15 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from __future__ import division
+
 import logging
 import re
 from collections import defaultdict
 from urlparse import urljoin
 
 from srs.claim import claim_to_judgment
+from srs.claim import split_into_sentences
 from srs.norm import smunch
 from srs.scrape import scrape_soup
 
@@ -58,6 +61,8 @@ MAX_SCORE = 100
 STATUS_PATH_RE = re.compile(r'.*score_(.*)\.gif$')
 
 SUBSCORE_RE = re.compile(r'^\s*([^:]+):\s+(\d+)/(\d+) points')
+
+NO_SPLIT_CLAIM_RE = re.compile(r'.*\b(also|however)\b.*', re.I)
 
 BRAND_CORRECTIONS = {  # hilarious
     'Climfast': 'Slimfast',
@@ -285,20 +290,28 @@ def scrape_company(url, known_brands):
     for b in soup.find(id='company_score').parent.select('b'):
         m = SUBSCORE_RE.match(b.text)
         if m and isinstance(b.next_sibling, unicode):
-            area = m.group(1)
-            score = int(m.group(2))
-            max_score = int(m.group(3))
-            claim = b.next_sibling
+            # used this for debugging
+            #area = m.group(1)
+            area_score = int(m.group(2))
+            area_max_score = int(m.group(3))
 
-            judgment = claim_to_judgment(claim)
+            raw_claim = b.next_sibling
 
-            yield 'company_claim', dict(company=company,
-                                        claim=claim,
-                                        judgment=judgment,
-                                        # for debugging:
-                                        area=area,
-                                        score=score,
-                                        max_score=max_score)
+            if NO_SPLIT_CLAIM_RE.match(raw_claim):
+                claims = [raw_claim]
+            else:
+                claims = list(split_into_sentences(raw_claim))
+
+            for claim in claims:
+                judgment = claim_to_judgment(claim)
+
+                # if score is low, maybe it's not so positive after all
+                if judgment == 1 and area_score / area_max_score < 0.5:
+                    judgment == 0
+
+                yield 'company_claim', dict(company=company,
+                                            claim=claim,
+                                            judgment=judgment)
 
 
 def scrape_description_and_judgment(status_path):
