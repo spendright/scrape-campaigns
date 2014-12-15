@@ -60,6 +60,10 @@ CLAIM_CLARIFICATIONS = [
     (re.compile(r'\bFLA\b'), '(Fair Labor Association)'),
 ]
 
+TWITTER_CORRECTIONS = {
+    '@illycafé': '@illycaffe',
+}
+
 log = getLogger(__name__)
 
 
@@ -77,7 +81,9 @@ def scrape_campaign(url=URL):
     c['donate_url'] = urljoin(url,
                               soup.find('a', text='Support us')['href'])
     c['facebook_url'] = scrape_facebook_url(soup)
-    c['twitter_handle'] = scrape_twitter_handle(soup)
+
+    th = scrape_twitter_handle(soup)
+    c['twitter_handle'] = TWITTER_CORRECTIONS.get(th.lower(), th)
 
     yield 'campaign', c
 

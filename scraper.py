@@ -41,7 +41,7 @@ CAMPAIGN_TO_SCRAPE_FREQ = {
 # use this to force scrapers to re-run (e.g. because code has changed)
 # this is supposed to be UTC time; if using a date, err toward the future
 CAMPAIGN_CHANGED_SINCE = {
-    'rankabrand': datetime(2014, 12, 6),
+    'rankabrand': datetime(2014, 12, 16),
     'free2work': datetime(2014, 12, 6),
     'climate_counts': datetime(2014, 12, 6),
 }
