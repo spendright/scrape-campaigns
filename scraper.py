@@ -35,7 +35,7 @@ DEFAULT_SCRAPE_FREQ = timedelta(days=6, hours=1)  # run nightly, scrape weekly
 
 # scrape rankabrand even less often than that
 CAMPAIGN_TO_SCRAPE_FREQ = {
-    'rankabrand': timedelta(weeks=2),
+    'rankabrand': timedelta(days=60),
 }
 
 # use this to force scrapers to re-run (e.g. because code has changed)
