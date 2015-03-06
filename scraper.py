@@ -33,6 +33,10 @@ log = logging.getLogger('scraper')
 # scrape these campaigns no more often than this limit
 DEFAULT_SCRAPE_FREQ = timedelta(days=6, hours=1)  # run nightly, scrape weekly
 
+DISABLED_CAMPAIGNS = {
+    'hope4congo',  # data is now in tasty PDF form
+}
+
 # scrape rankabrand even less often than that
 CAMPAIGN_TO_SCRAPE_FREQ = {
     'rankabrand': timedelta(days=60),
@@ -57,9 +61,9 @@ def main():
     if not campaigns and environ.get('MORPH_CAMPAIGNS'):
         campaigns = environ['MORPH_CAMPAIGNS'].split(',')
 
-    skip_campaigns = []
+    skip_campaigns = set(DISABLED_CAMPAIGNS)
     if environ.get('MORPH_SKIP_CAMPAIGNS'):
-        skip_campaigns = environ['MORPH_SKIP_CAMPAIGNS'].split(',')
+        skip_campaigns.update(environ['MORPH_SKIP_CAMPAIGNS'].split(','))
 
     use_decimal_type_in_sqlite()
 
