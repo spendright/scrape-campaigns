@@ -277,6 +277,9 @@ def scrape_twitter_handle_from_nudge_url(url):
     soup = scrape_soup(url)
 
     twitter_p = soup.select('#email_tpl div p')[0]
+    if twitter_p.text.find('^Unfortunately'):
+        return 
+     
     for word in twitter_p.text.split():
         if word.startswith('@'):
             return word
