@@ -96,7 +96,7 @@ def scrape_campaign():
         if company.upper() != company_in_caps.upper():
             raise ValueError(u"Non-matching company name: {}".format(company))
 
-        yield 'company_rating', {
+        yield 'rating', {
             'company': company,
             'score': score,
             'max_score': max_score,
