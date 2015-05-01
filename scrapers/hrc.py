@@ -259,5 +259,5 @@ def scrape_cat_page(cat_id):
         for i, s in enumerate(strings):
             if s == ';':
                 brand = strings[i - 1]
-                yield 'brand_category', dict(
+                yield 'category', dict(
                     company=rating['company'], brand=brand, category=category)
