@@ -186,8 +186,8 @@ def scrape_brand(url, sectors, soup=None):
     sectors = correct_sectors(sectors)
     b['category'] = sectors[-1]
     for i in range(len(sectors) - 1):
-        yield 'category', dict(parent_category=sectors[i],
-                               category=sectors[i + 1])
+        yield 'subcategory', dict(category=sectors[i],
+                                  subcategory=sectors[i + 1])
 
     # twitter handle
     for a in soup.select('ol#do-something a'):
@@ -278,8 +278,8 @@ def scrape_twitter_handle_from_nudge_url(url):
 
     twitter_p = soup.select('#email_tpl div p')[0]
     if twitter_p.text.find('^Unfortunately'):
-        return 
-     
+        return
+
     for word in twitter_p.text.split():
         if word.startswith('@'):
             return word
