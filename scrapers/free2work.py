@@ -348,19 +348,19 @@ def scrape_rating_page(rating_id):
         for rating_brand in rating_brands:
             rating = d.copy()
             rating['brand'] = rating_brand
-            yield 'brand_rating', rating
+            yield 'rating', rating
 
             for claim in claims:
                 claim = claim.copy()
                 claim['brand'] = rating_brand
-                yield 'brand_claim', claim
+                yield 'claim', claim
     else:
         rating = d.copy()
         if 'brand' in rating:
             rating['brands'] = [rating.pop('brand')]
-        yield 'company_rating', rating
+        yield 'rating', rating
         for claim in claims:
-            yield 'company_claim', claim
+            yield 'claim', claim
 
 
 def to_iso_date(dt):

@@ -79,7 +79,7 @@ def scrape_campaign():
         score = fix_score(float(score))
         judgment = score_to_judgment(score)
 
-        yield 'company_rating', dict(
+        yield 'rating', dict(
             company=company,
             score=score,
             max_score=MAX_SCORE,

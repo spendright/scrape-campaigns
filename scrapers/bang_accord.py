@@ -81,10 +81,10 @@ def scrape_signatories_page(signatories_url):
         # each subsequent country
         for b in col.findAll('b'):
             for company in _scrape_companies_from_b(b):
-                yield 'company_rating', dict(company=company,
+                yield 'rating', dict(company=company,
                                              judgment=1,
                                              categories=[CATEGORY])
-                yield 'company_claim', dict(company=company,
+                yield 'claim', dict(company=company,
                                             judgment=1,
                                             claim=CLAIM)
 

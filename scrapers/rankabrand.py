@@ -204,11 +204,11 @@ def scrape_brand(url, sectors, soup=None):
         r['date'] = to_iso_date(edit_date)
 
     # rating scraped!
-    yield 'brand_rating', r
+    yield 'rating', r
 
     # include claims from sustainability report
     for claim in scrape_claims(url, b['company'], b['brand'], soup):
-        yield 'brand_claim', claim
+        yield 'claim', claim
 
 
 def scrape_claims(url, company, brand, soup=None):

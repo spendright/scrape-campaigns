@@ -285,7 +285,7 @@ def scrape_company(url, known_brands):
         yield 'brand', dict(company=company, brand=brand, twitter_handle=th)
 
     yield 'company', c
-    yield 'company_rating', r
+    yield 'rating', r
 
     # parse claims
     for b in soup.find(id='company_score').parent.select('b'):
@@ -313,7 +313,7 @@ def scrape_company(url, known_brands):
                 if judgment == 1 and area_score / area_max_score < 0.5:
                     judgment == 0
 
-                yield 'company_claim', dict(company=company,
+                yield 'claim', dict(company=company,
                                             claim=claim,
                                             judgment=judgment)
 

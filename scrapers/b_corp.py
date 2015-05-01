@@ -182,9 +182,9 @@ def do_corp(url, industry):
         for claim in claims:
             claim = claim.strip()
             if claim:
-                yield 'company_claim', dict(
+                yield 'claim', dict(
                     company=c['company'],
                     claim=claim,
                     judgment=1)
 
-    yield 'company_rating', r
+    yield 'rating', r

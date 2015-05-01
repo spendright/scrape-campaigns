@@ -40,7 +40,7 @@ def action_do(url, rating)
 
     # url contains a lot of extraneous variables
     rating['url'] = cpage.uri.to_s.split('&')[0]
-    rating['table'] = 'company_rating'
+    rating['table'] = 'rating'
     rating['company'] = company
 
     puts rating.to_json
