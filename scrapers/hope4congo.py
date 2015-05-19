@@ -142,7 +142,7 @@ def scrape_campaign():
         # that participants are supposed to send to the company:
         # "Thank you for the leadership you have shown in working to..."
 
-        yield 'company_rating', r
+        yield 'rating', r
 
         detail_soup = BeautifulSoup(details['detail'])
         claim_lis = detail_soup.select('li')
@@ -159,6 +159,6 @@ def scrape_campaign():
 
             claim = clarify_claim(claim, CLAIM_CLARIFICATIONS)
 
-            yield 'company_claim', dict(company=company,
+            yield 'claim', dict(company=company,
                                         claim=claim,
                                         judgment=judgment)

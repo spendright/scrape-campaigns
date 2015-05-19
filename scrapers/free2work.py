@@ -48,7 +48,7 @@ RATINGS_URL = 'http://widgets.free2work.org/frontend_ratings/public_view/'
 # not "K-Mart")
 DUPLICATE_RATINGS = [1095]
 
-JSON_CALLBACK_RE = re.compile('jsonCallback\((.*)\)')
+JSON_CALLBACK_RE = re.compile(r'jsonCallback\((.*)\)')
 
 CLAIM_AREA_RE = re.compile(r'([A-Z][A-Z ]*):')
 
@@ -106,6 +106,10 @@ SUFFIXES = {
     # On Divine 2
     # http://widgets.free2work.org/frontend_ratings/public_view/440
     '- resave old version': {},
+    # bunch of updates with "2015" in "Rating based on assessment of" field
+    ' 2015': {'date': '2015'},
+    # who knows what will happen in 2016? might as well be prepared
+    ' 2016': {'date': '2016'},
 }
 
 
@@ -240,6 +244,7 @@ def scrape_rating_page(rating_id):
     # fix e.g. "Clean Clothes, Inc.: Maggie's Organics"
     if company.endswith(': ' + brand):
         company = company[:-(2 + len(brand))]
+
     for prefix in COMPANY_PREFIXES:
         if company.startswith(prefix):
             company = company[len(prefix):].rstrip(')')
@@ -277,6 +282,9 @@ def scrape_rating_page(rating_id):
             if category in d['categories']:
                 date = str(year)
                 break
+
+    if date is not None:
+        d['date'] = date
 
     # handle grades
     gb_span = h3_spans['grade breakdown']
@@ -340,19 +348,19 @@ def scrape_rating_page(rating_id):
         for rating_brand in rating_brands:
             rating = d.copy()
             rating['brand'] = rating_brand
-            yield 'brand_rating', rating
+            yield 'rating', rating
 
             for claim in claims:
                 claim = claim.copy()
                 claim['brand'] = rating_brand
-                yield 'brand_claim', claim
+                yield 'claim', claim
     else:
         rating = d.copy()
         if 'brand' in rating:
             rating['brands'] = [rating.pop('brand')]
-        yield 'company_rating', rating
+        yield 'rating', rating
         for claim in claims:
-            yield 'company_claim', claim
+            yield 'claim', claim
 
 
 def to_iso_date(dt):
@@ -362,7 +370,7 @@ def to_iso_date(dt):
         month, day, year = map(int, dt.split('/'))
         if year < 100:
             year += 2000
-        if month > 12:  # handle 27/6/13
+        if month > 12 or year >= 2015:  # handle 27/6/13
             day, month = month, day
         return '{:04d}-{:02d}-{:02d}'.format(year, month, day)
     elif ' ' in dt:

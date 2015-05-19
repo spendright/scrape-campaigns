@@ -1,4 +1,6 @@
-#   Copyright 2014 SpendRight, Inc.
+# -*- coding: utf-8 -*-
+
+#   Copyright 2014-2015 SpendRight, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -122,7 +124,7 @@ def scrape_campaign():
         org_name = landing['orgs'][org_id]
         log.info(u'Org {:d}: {} ({:d} of {:d})'.format(
             org_id, org_name, i + 1, len(all_org_ids)))
-        for record in scrape_org_page(org_id):
+        for record in scrape_org_page(org_id, org_name):
             yield record
 
 
@@ -149,7 +151,7 @@ def scrape_landing_page():
     return d
 
 
-def scrape_org_page(org_id):
+def scrape_org_page(org_id, org_name=''):
     company = {}
     rating = {}
 
@@ -169,6 +171,10 @@ def scrape_org_page(org_id):
         raise ValueError('company section not found')
 
     company['company'] = company_h2.text[:company_h2.text.index('[')].strip()
+    if not company['company']:
+        # Nestlé Purina had no name on org page as of 2015-04-30
+        company['company'] = org_name
+
     score = company_h2.span.text.split()[-1]
     if score != 'RATING':  # OSI RESTAURANT PARTNERS has no rating (52300)
         rating['score'] = int(score)
@@ -209,7 +215,7 @@ def scrape_org_page(org_id):
         if b != 'end While']
 
     rating['company'] = company
-    yield 'company_rating', rating
+    yield 'rating', rating
 
 
 def scrape_cat_page(cat_id):
@@ -245,7 +251,7 @@ def scrape_cat_page(cat_id):
             img = tds[1].img
             rating['judgment'] = IMG_TO_JUDGMENT[basename(img['src'])]
 
-        yield 'company_rating', rating
+        yield 'rating', rating
 
         # extract brands
         strings = list(tds[0].stripped_strings)
@@ -253,5 +259,5 @@ def scrape_cat_page(cat_id):
         for i, s in enumerate(strings):
             if s == ';':
                 brand = strings[i - 1]
-                yield 'brand_category', dict(
+                yield 'category', dict(
                     company=rating['company'], brand=brand, category=category)

@@ -124,11 +124,11 @@ def scrape_product_types():
         for company, brand, sector in scrape_brand_results(cat_soup):
             if '-' in sector:  # Beer-Beverages
                 parent_sector, sector = sector.split('-', 1)
-                yield 'category', dict(
-                    category=sector, parent_category=parent_sector)
+                yield 'subcategory', dict(
+                    category=parent_sector, subcategory=sector)
 
-            yield 'category', dict(category=cat, parent_category=sector)
-            yield 'brand', dict(company=company, brand=brand, category=cat)
+            yield 'subcategory', dict(category=sector, subcategory=cat)
+            yield 'category', dict(company=company, brand=brand, category=cat)
 
 
 def scrape_brand_results(soup):
@@ -154,8 +154,8 @@ def scrape_brands(known_brands):
         if sector:
             if '-' in sector:  # Beer-Beverages
                 parent_sector, sector = sector.split('-', 1)
-                yield 'category', dict(
-                    category=sector, parent_category=parent_sector)
+                yield 'subcategory', dict(
+                    category=parent_sector, subcategory=sector)
 
             yield 'brand', dict(company=company, brand=brand, category=sector)
         else:
@@ -285,7 +285,7 @@ def scrape_company(url, known_brands):
         yield 'brand', dict(company=company, brand=brand, twitter_handle=th)
 
     yield 'company', c
-    yield 'company_rating', r
+    yield 'rating', r
 
     # parse claims
     for b in soup.find(id='company_score').parent.select('b'):
@@ -313,7 +313,7 @@ def scrape_company(url, known_brands):
                 if judgment == 1 and area_score / area_max_score < 0.5:
                     judgment == 0
 
-                yield 'company_claim', dict(company=company,
+                yield 'claim', dict(company=company,
                                             claim=claim,
                                             judgment=judgment)
 

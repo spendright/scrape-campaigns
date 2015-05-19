@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #   Copyright 2014 SpendRight, Inc.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +62,10 @@ CLAIM_CLARIFICATIONS = [
     (re.compile(r'\bFLA\b'), '(Fair Labor Association)'),
 ]
 
+TWITTER_CORRECTIONS = {
+    '@illycafé': '@illycaffe',
+}
+
 log = getLogger(__name__)
 
 
@@ -77,7 +83,9 @@ def scrape_campaign(url=URL):
     c['donate_url'] = urljoin(url,
                               soup.find('a', text='Support us')['href'])
     c['facebook_url'] = scrape_facebook_url(soup)
-    c['twitter_handle'] = scrape_twitter_handle(soup)
+
+    th = scrape_twitter_handle(soup)
+    c['twitter_handle'] = TWITTER_CORRECTIONS.get(th.lower(), th)
 
     yield 'campaign', c
 
@@ -179,8 +187,8 @@ def scrape_brand(url, sectors, soup=None):
     sectors = correct_sectors(sectors)
     b['category'] = sectors[-1]
     for i in range(len(sectors) - 1):
-        yield 'category', dict(parent_category=sectors[i],
-                               category=sectors[i + 1])
+        yield 'subcategory', dict(category=sectors[i],
+                                  subcategory=sectors[i + 1])
 
     # twitter handle
     for a in soup.select('ol#do-something a'):
@@ -197,11 +205,11 @@ def scrape_brand(url, sectors, soup=None):
         r['date'] = to_iso_date(edit_date)
 
     # rating scraped!
-    yield 'brand_rating', r
+    yield 'rating', r
 
     # include claims from sustainability report
     for claim in scrape_claims(url, b['company'], b['brand'], soup):
-        yield 'brand_claim', claim
+        yield 'claim', claim
 
 
 def scrape_claims(url, company, brand, soup=None):
@@ -270,6 +278,9 @@ def scrape_twitter_handle_from_nudge_url(url):
     soup = scrape_soup(url)
 
     twitter_p = soup.select('#email_tpl div p')[0]
+    if twitter_p.text.find('^Unfortunately'):
+        return
+
     for word in twitter_p.text.split():
         if word.startswith('@'):
             return word

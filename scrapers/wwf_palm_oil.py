@@ -131,7 +131,7 @@ def scrape_category(url, category):
 
         c['hq_country'] = country_td.text
 
-        yield 'company_rating', r
+        yield 'rating', r
 
 
 def color_to_judgment(color):
