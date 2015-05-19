@@ -169,9 +169,10 @@ def scrape_brand(url, sectors, soup=None):
     # logo URL
     logo_img = soup.select('div.logobox img')[0]
     logo_url = urljoin(url, logo_img['src'])
-    # repair poorly urlencoded img param
+    # repair poorly urlencoded path and img param
     parts = list(urlparse(logo_url))
     parts[3] = urlencode(parse_qsl(parts[3]))
+    parts[4] = urlencode(parse_qsl(parts[4]))
     b['logo_url'] = urlunparse(parts)
 
     # category stuff
