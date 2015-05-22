@@ -176,12 +176,7 @@ def scrape_brand(url, sectors, soup=None):
 
     # logo URL
     logo_img = soup.select('div.logobox img')[0]
-    logo_url = urljoin(url, logo_img['src'])
-    # repair poorly urlencoded path and img param
-    parts = list(urlparse(logo_url))
-    parts[3] = urlencode(parse_qsl(parts[3]))
-    parts[4] = urlencode(parse_qsl(parts[4]))
-    b['logo_url'] = urlunparse(parts)
+    b['logo_url'] = repair_url(urljoin(url, logo_img['src']))
 
     # category stuff
     sectors = correct_sectors(sectors)
@@ -289,3 +284,18 @@ def scrape_twitter_handle_from_nudge_url(url):
 def correct_sectors(sectors):
     return [SECTOR_CORRECTIONS.get(sector, sector)
             for sector in sectors]
+
+
+def repair_url(url):
+    """Properly URL-encode accented character in URL."""
+    parts = list(urlparse(url))
+
+    # query
+    query_params = parse_qsl(parts[4])
+    # explicitly UTF-8 encode accented characters
+    query_params = [
+        (key, value.encode('utf_8') if not isinstance(value, bytes) else value)
+        for (key, value) in query_params]
+    parts[4] = urlencode(query_params)
+
+    return urlunparse(parts)
