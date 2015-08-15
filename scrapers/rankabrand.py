@@ -151,22 +151,11 @@ def scrape_brand(url, sectors, soup=None):
         soup = scrape_soup(url)
 
     b = {}  # brand dict
-    r = {'brand': b, 'url': url}  # rating dict
 
-    # grade
+    # brand
     brand_a = soup.select('dl.brands a')[0]
     b['brand'] = brand_a.dt.text
     log.info(u'Brand: {}'.format(b['brand']))
-    rating_span = brand_a.span
-    r['grade'] = rating_span['alt']
-    r['judgment'] = grade_to_judgment(r['grade'])
-    r['description'] = rating_span['title']
-
-    # score
-    score_a = soup.find('a', href='#detailed-report')
-    score_parts = score_a.text.strip().split()
-    r['score'] = int(score_parts[0])
-    r['max_score'] = int(score_parts[-1])
 
     # company
     sidebar_final_p = soup.select('#main div')[0].select('p')[-1]
@@ -191,6 +180,27 @@ def scrape_brand(url, sectors, soup=None):
             nudge_url = urljoin(url, a['href'])
             b['twitter_handle'] = (
                 scrape_twitter_handle_from_nudge_url(nudge_url))
+
+    # done with brand
+    yield 'brand', b
+
+    # rated? if not, bail out (see #10)
+    rating_span = brand_a.span
+    if any(c.startswith('not-ranked') for c in rating_span['class']):
+        return
+
+    # rating dict
+    r = {'brand': b['brand'], 'company': b['company'], 'url': url}
+
+    r['grade'] = rating_span['alt']
+    r['judgment'] = grade_to_judgment(r['grade'])
+    r['description'] = rating_span['title']
+
+    # score
+    score_a = soup.find('a', href='#detailed-report')
+    score_parts = score_a.text.strip().split()
+    r['score'] = int(score_parts[0])
+    r['max_score'] = int(score_parts[-1])
 
     # last edited date
     brand_change_label = soup.find('span', class_='brand_change_label')
