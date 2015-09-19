@@ -39,11 +39,15 @@ GOAL = 'Redefine success in business'
 AUTHOR = 'B Lab'
 CAMPAIGN = 'B Corporation List'
 
+# wait 5 minutes instead of 30 seconds to avoid failing from timeouts
+TIMEOUT = 300
+
+
 log = logging.getLogger(__name__)
 
 
 def scrape_campaign():
-    soup = scrape_soup(DIRECTORY_URL)
+    soup = scrape_soup(DIRECTORY_URL, timeout=TIMEOUT)
 
     c = {
         'campaign': CAMPAIGN,
@@ -83,7 +87,7 @@ def scrape_industry(url, industry):
     while True:
         log.info('Page {:d} of {}'.format(page_num, industry))
 
-        soup = scrape_soup(url)
+        soup = scrape_soup(url, timeout=TIMEOUT)
 
         for a in soup.select('h6.field-content a'):
             for record in do_corp(urljoin(url, a['href']), industry):
@@ -108,7 +112,7 @@ def do_corp(url, industry):
     log.info('Business page: {}'.format(biz_id))
 
     try:
-        html = scrape(url)
+        html = scrape(url, timeout=TIMEOUT)
     except HTTPError as e:
         if 'infinite loop' in e.msg:
             log.warn('infinite loop when fetching {}'.format(url))
