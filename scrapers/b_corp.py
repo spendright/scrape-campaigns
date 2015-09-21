@@ -13,11 +13,14 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+import logging
+import socket
 from os import environ
+from retrying import retry
 from urllib import quote_plus
 from urllib2 import HTTPError
+from urllib2 import URLError
 from urlparse import urljoin
-import logging
 
 from bs4 import BeautifulSoup
 
@@ -42,8 +45,31 @@ CAMPAIGN = 'B Corporation List'
 # wait 5 minutes instead of 30 seconds to avoid failing from timeouts
 TIMEOUT = 300
 
-
 log = logging.getLogger(__name__)
+
+
+def is_recoverable(ex):
+    if isinstance(ex, socket.timeout):
+        return True
+
+    if isinstance(ex, URLError) and isinstance(ex.reason, socket.timeout):
+        return True
+
+    if isinstance(ex, HTTPError) and ex.code == 500:
+        return True
+
+    return False
+
+
+# retry recoverable errors with exponential backoff starting at 10 seconds,
+# with a maximum of 10 minutes of wait time
+RETRY = retry(retry_on_exception=is_recoverable,
+              stop_max_delay=600000,
+              wait_exponential_multiplier=10000)
+
+scrape = RETRY(scrape)
+scrape_soup = RETRY(scrape_soup)
+
 
 
 def scrape_campaign():

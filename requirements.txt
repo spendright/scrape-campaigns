@@ -7,3 +7,4 @@ requests==1.0.4  # used by srs.vendor.reppy
 
 # requirements for this scraper specifically
 python-dateutil==1.5
+retrying==1.3.3
