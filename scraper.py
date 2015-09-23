@@ -50,6 +50,7 @@ CAMPAIGN_CHANGED_SINCE = {
     'free2work': datetime(2015, 4, 30),
     'greenpeace_electronics': datetime(2015, 4, 30),
     'hrc': datetime(2015, 4, 30),
+    'mining_the_disclosures': datetime(2015, 9, 24),
     'rankabrand': datetime(2015, 5, 23),
     'wwf_palm_oil': datetime(2015, 4, 30),
 }
