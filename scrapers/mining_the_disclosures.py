@@ -13,6 +13,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+import re
 from logging import getLogger
 from os.path import basename
 from os.path import exists
@@ -24,10 +25,11 @@ from bs4 import BeautifulSoup
 
 from srs.scrape import download
 
+SCORE_RE = re.compile(r'^\d+\.\d$')
 
 CAMPAIGN_URL = 'http://www.sourcingnetwork.org/mining-the-disclosures/'
 
-PDF_URL = 'http://www.sourcingnetwork.org/storage/minerals-publications/Mining_the_Disclosures_2015.pdf'
+PDF_URL = 'http://www.sourcingnetwork.org/storage/minerals-publications/Mining_the_Disclosures_2015_20150922.pdf'
 
 # facebook, twitter, and donation URLs are on www.sourcingnetwork.org,
 # could scrape
@@ -106,11 +108,11 @@ def scrape_campaign():
     strings = list(soup.body.stripped_strings)
 
     for i, s in enumerate(strings):
-        # look for percentiles
-        if not s.endswith('%'):
+        # look for score
+        if not SCORE_RE.match(s):
             continue
 
-        row = strings[i - 6:i + 1]
+        row = strings[i - 5:i + 1]
 
         # asterisk indicates they were in 2014 pilot study
         company = row[0].rstrip('*')
