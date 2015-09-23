@@ -45,7 +45,7 @@ CAMPAIGN = dict(
     # add scale info in anticipation of msd issue #29
     min_score=0,
     max_score=100,
-    score_precision=2,
+    score_precision=1,
     twitter_handle='@SourcingNetwork',
     url=CAMPAIGN_URL,
 )
