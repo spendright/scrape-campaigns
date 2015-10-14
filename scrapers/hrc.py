@@ -259,5 +259,8 @@ def scrape_cat_page(cat_id):
         for i, s in enumerate(strings):
             if s == ';':
                 brand = strings[i - 1]
+                # issue #15: empty brands result in consecutive ;'s
+                if brand == ';':
+                    continue
                 yield 'category', dict(
                     company=rating['company'], brand=brand, category=category)
