@@ -372,6 +372,8 @@ def to_iso_date(dt):
         month, day, year = map(int, DATE_SPLIT_RE.split(dt))
         if year < 100:
             year += 2000
+        # from 2015 onwards, free2work is maintained by Australians
+        # and uses DD/MM/YY
         if month > 12 or year >= 2015:  # handle 27/6/13
             day, month = month, day
         return '{:04d}-{:02d}-{:02d}'.format(year, month, day)
