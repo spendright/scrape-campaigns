@@ -57,6 +57,8 @@ POINTLESS_CLAIM_RE = re.compile(r'^[\.\s]*$')
 CLAIM_NOT_GOOD_RE = re.compile(
     r'.*\b(0|1-25)%.*\bsuppliers\b.*\bmonitored\b.*', re.I)
 
+DATE_SPLIT_RE = re.compile(r'/+')
+
 
 # TODO: scrape this from the page
 CAMPAIGN = {
@@ -366,8 +368,8 @@ def scrape_rating_page(rating_id):
 def to_iso_date(dt):
     if not dt:
         return ''
-    elif '/' in dt:
-        month, day, year = map(int, dt.split('/'))
+    elif DATE_SPLIT_RE.search(dt):
+        month, day, year = map(int, DATE_SPLIT_RE.split(dt))
         if year < 100:
             year += 2000
         if month > 12 or year >= 2015:  # handle 27/6/13
