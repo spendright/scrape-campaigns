@@ -57,7 +57,8 @@ POINTLESS_CLAIM_RE = re.compile(r'^[\.\s]*$')
 CLAIM_NOT_GOOD_RE = re.compile(
     r'.*\b(0|1-25)%.*\bsuppliers\b.*\bmonitored\b.*', re.I)
 
-DATE_SPLIT_RE = re.compile(r'/+')
+# account for all kinds of typos in dates
+DATE_SPLIT_RE = re.compile(r'-?/+')
 
 
 # TODO: scrape this from the page
