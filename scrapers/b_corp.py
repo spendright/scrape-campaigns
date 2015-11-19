@@ -55,7 +55,7 @@ def is_recoverable(ex):
     if isinstance(ex, URLError) and isinstance(ex.reason, socket.timeout):
         return True
 
-    if isinstance(ex, HTTPError) and ex.code == 500:
+    if isinstance(ex, HTTPError) and ex.code in (500, 503):
         return True
 
     return False

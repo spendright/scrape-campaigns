@@ -20,8 +20,8 @@ from urlparse import urljoin
 
 from bs4 import BeautifulSoup
 
-from srs.scrape import scrape
-from srs.scrape import scrape_soup
+from .b_corp import scrape
+from .b_corp import scrape_soup
 
 
 URL = 'http://www.hrc.org/apps/buyersguide/'
