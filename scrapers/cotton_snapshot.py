@@ -15,6 +15,7 @@
 #   limitations under the License.
 import re
 from logging import getLogger
+from os import environ
 from os.path import basename
 from os.path import exists
 from subprocess import CalledProcessError
@@ -76,18 +77,13 @@ log = getLogger(__name__)
 def scrape_campaign():
     yield 'campaign', CAMPAIGN
 
-    pdf_path = basename(PDF_URL)
-    if not exists(pdf_path):
-        log.info('downloading {} -> {}'.format(PDF_URL, pdf_path))
-        download(PDF_URL, pdf_path)
+    if environ.get('MORPH_COTTON_SNAPSHOT_HTML_PATH'):
+        with open(environ.get('MORPH_COTTON_SNAPSHOT_HTML_PATH')) as f:
+            html = f.read()
+    else:
+        html = html_from_pdf()
 
-    args = ['pdftohtml', '-f', '2', '-l', '2', '-stdout', pdf_path]
-    proc = Popen(args, stdout=PIPE)
-    stdout, _ = proc.communicate()
-    if proc.returncode:
-        raise CalledProcessError(proc.returncode, args)
-
-    soup = BeautifulSoup(stdout)
+    soup = BeautifulSoup(html)
 
     strings = list(soup.body.stripped_strings)
 
@@ -133,6 +129,20 @@ def scrape_campaign():
         company = None
         score = None
 
+
+def html_from_pdf():
+    pdf_path = basename(PDF_URL)
+    if not exists(pdf_path):
+        log.info('downloading {} -> {}'.format(PDF_URL, pdf_path))
+        download(PDF_URL, pdf_path)
+
+    args = ['pdftohtml', '-f', '2', '-l', '2', '-stdout', pdf_path]
+    proc = Popen(args, stdout=PIPE)
+    stdout, _ = proc.communicate()
+    if proc.returncode:
+        raise CalledProcessError(proc.returncode, args)
+
+    return stdout
 
 
 def score_to_judgment(score):
