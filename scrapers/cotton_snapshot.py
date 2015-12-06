@@ -27,6 +27,8 @@ from bs4 import BeautifulSoup
 from srs.scrape import download
 
 SCORE_RE = re.compile(r'^\d+(\.\d)?$')
+SYMBOLS_RE = re.compile(r'^[*^+#]+$')
+COMPANY_AND_SYMBOLS_RE = re.compile(r'^(.*?)\s+([*^+#]+)$')
 
 CAMPAIGN_URL = 'http://www.sourcingnetwork.org/cotton-sourcing-snapshot/'
 
@@ -77,8 +79,8 @@ log = getLogger(__name__)
 def scrape_campaign():
     yield 'campaign', CAMPAIGN
 
-    if environ.get('MORPH_COTTON_SNAPSHOT_HTML_PATH'):
-        with open(environ.get('MORPH_COTTON_SNAPSHOT_HTML_PATH')) as f:
+    if environ.get('MORPH_COTTON_SNAPSHOT_HTML'):
+        with open(environ['MORPH_COTTON_SNAPSHOT_HTML']) as f:
             html = f.read()
     else:
         html = html_from_pdf()
@@ -92,6 +94,19 @@ def scrape_campaign():
     score = None
 
     for s in reversed(strings):
+        # workaround for very old pdftohtml (see #13)
+        s = s.replace(u'\xa0', u' ')
+
+        # fix for All Saints
+        s = s.replace('l  ', 'll ')
+
+        # fix for Williams Sonoma
+        s = s.replace('l i', 'lli')
+
+        if SYMBOLS_RE.match(s):
+            claim_symbols.update(s)
+            continue
+
         if SCORE_RE.match(s):
             score = float(s)
             continue
@@ -103,15 +118,18 @@ def scrape_campaign():
         if s[:1] in '(#':
             continue
 
-        # reached company name, emit records
         if score is None:
             continue
 
-        company = s
+        # reached company name
+        m = COMPANY_AND_SYMBOLS_RE.match(s)
+        if m:
+            company = m.group(1)
+            claim_symbols.update(m.group(2))
+        else:
+            company = s
 
-        # fix e.g. "Wil iams-Sonoma" (ligature issue?)
-        company = company.replace('l i', 'lli')
-
+        # emit record
         yield 'rating', dict(
             company=company,
             judgment=score_to_judgment(score),
