@@ -15,6 +15,7 @@
 #   limitations under the License.
 import re
 from logging import getLogger
+from os import environ
 from os.path import basename
 from os.path import exists
 from subprocess import CalledProcessError
@@ -26,6 +27,8 @@ from bs4 import BeautifulSoup
 from srs.scrape import download
 
 SCORE_RE = re.compile(r'^\d+(\.\d)?$')
+SYMBOLS_RE = re.compile(r'^[*^+#]+$')
+COMPANY_AND_SYMBOLS_RE = re.compile(r'^(.*?)\s+([*^+#]+)$')
 
 CAMPAIGN_URL = 'http://www.sourcingnetwork.org/cotton-sourcing-snapshot/'
 
@@ -76,18 +79,13 @@ log = getLogger(__name__)
 def scrape_campaign():
     yield 'campaign', CAMPAIGN
 
-    pdf_path = basename(PDF_URL)
-    if not exists(pdf_path):
-        log.info('downloading {} -> {}'.format(PDF_URL, pdf_path))
-        download(PDF_URL, pdf_path)
+    if environ.get('MORPH_COTTON_SNAPSHOT_HTML'):
+        with open(environ['MORPH_COTTON_SNAPSHOT_HTML']) as f:
+            html = f.read()
+    else:
+        html = html_from_pdf()
 
-    args = ['pdftohtml', '-f', '2', '-l', '2', '-stdout', pdf_path]
-    proc = Popen(args, stdout=PIPE)
-    stdout, _ = proc.communicate()
-    if proc.returncode:
-        raise CalledProcessError(proc.returncode, args)
-
-    soup = BeautifulSoup(stdout)
+    soup = BeautifulSoup(html)
 
     strings = list(soup.body.stripped_strings)
 
@@ -96,6 +94,19 @@ def scrape_campaign():
     score = None
 
     for s in reversed(strings):
+        # workaround for very old pdftohtml (see #13)
+        s = s.replace(u'\xa0', u' ')
+
+        # fix for All Saints
+        s = s.replace('l  ', 'll ')
+
+        # fix for Williams Sonoma
+        s = s.replace('l i', 'lli')
+
+        if SYMBOLS_RE.match(s):
+            claim_symbols.update(s)
+            continue
+
         if SCORE_RE.match(s):
             score = float(s)
             continue
@@ -107,15 +118,18 @@ def scrape_campaign():
         if s[:1] in '(#':
             continue
 
-        # reached company name, emit records
         if score is None:
             continue
 
-        company = s
+        # reached company name
+        m = COMPANY_AND_SYMBOLS_RE.match(s)
+        if m:
+            company = m.group(1)
+            claim_symbols.update(m.group(2))
+        else:
+            company = s
 
-        # fix e.g. "Wil iams-Sonoma" (ligature issue?)
-        company = company.replace('l i', 'lli')
-
+        # emit record
         yield 'rating', dict(
             company=company,
             judgment=score_to_judgment(score),
@@ -133,6 +147,20 @@ def scrape_campaign():
         company = None
         score = None
 
+
+def html_from_pdf():
+    pdf_path = basename(PDF_URL)
+    if not exists(pdf_path):
+        log.info('downloading {} -> {}'.format(PDF_URL, pdf_path))
+        download(PDF_URL, pdf_path)
+
+    args = ['pdftohtml', '-f', '2', '-l', '2', '-stdout', pdf_path]
+    proc = Popen(args, stdout=PIPE)
+    stdout, _ = proc.communicate()
+    if proc.returncode:
+        raise CalledProcessError(proc.returncode, args)
+
+    return stdout
 
 
 def score_to_judgment(score):
