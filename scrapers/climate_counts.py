@@ -65,14 +65,31 @@ SUBSCORE_RE = re.compile(r'^\s*([^:]+):\s+(\d+)/(\d+) points')
 
 NO_SPLIT_CLAIM_RE = re.compile(r'.*\b(also|however)\b.*', re.I)
 
+# still more work to do here:
+#
+# missing capitalization: e.g. 'Cnn'
+# missing apostrophes: e.g. 'Arbys'
+# incorrect owner: e.g. 'Haagen-dazs' for Nestle
 BRAND_CORRECTIONS = {  # hilarious
+    'Bana Republic': 'Banana Republic',
     'Climfast': 'Slimfast',
+    'Clorix': 'Clorox',
     'Gatoraide': 'Gatorade',
+    'Hilshire Farms': 'Hillshire Farms',
     'Litpon': 'Lipton',
+    'Loreal Paris': "L'Oreal Paris",
     'Mountain Des': 'Mountain Dew',
-    'Wgeaties': 'Wheaties',
-    'Talko Bell': 'Taco Bell',
+    'Nind West': 'Nine West',
+    'Oriville Redenbacker': "Orville Redenbacher's",
+    'Pilsbury': 'Pillsbury',
     'Siemans': 'Siemens',
+    'Talko Bell': 'Taco Bell',
+    'Victoria Secret': "Victoria's Secret",
+    'Wendys': "Wendy's",
+    'Weson': 'Wesson',
+    'Wgeaties': 'Wheaties',
+    'Whinnie the Pooh': 'Winnie the Pooh',
+    'Youplait': 'Yoplait',
 }
 
 SMUNCHED_BRAND_CORRECTIONS = dict(
