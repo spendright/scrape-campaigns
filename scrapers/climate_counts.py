@@ -63,7 +63,7 @@ DESCRIPTION_TO_JUDGMENT = {
 DESCRIPTION_TO_EXPLANATION = {
     'Stuck': 'not yet taking meaningful action',
     'Starting': 'at an early stage',
-    'Striding': 'beginning to hit their stride',
+    'Striding': 'a very good choice',
     'Soaring': 'demonstrating exceptional leadership',
 }
 
