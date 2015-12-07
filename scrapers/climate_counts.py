@@ -29,18 +29,20 @@ from srs.scrape import scrape_soup
 
 # TODO: scrape this from the page
 CAMPAIGN = {
+    'author': 'Climate Counts',
     'campaign': 'Climate Counts Scorecard',
+    'contributors': ('Stonyfield Organic, University of New Hampshire,'
+                     ' Carbon Disclosure Project'),
+    'copyright': u'© 2006-2015 Climate Counts. All Rights Reserved.',
+    'date': '2015',
+    'donate_url': 'http://climatecounts.org/score_more.php',
+    'facebook_url': 'http://www.facebook.com/pages/Climate-Counts/7698023321',
     # Compacted version of "We help consumers use their choices & voices
     # to motivate the world's largest companies to operate more sustainably
     # and reduce their climate impact"
     'goal': "Reduce large companies' climate impact",
-    'url': 'http://climatecounts.org/',
-    'author': 'Climate Counts',
-    'contributors': 'Stonyfield Organic, University of New Hampshire',
-    'copyright': u'© 2006-2014 Climate Counts. All Rights Reserved.',
-    'donate_url': 'http://climatecounts.org/score_more.php',
     'twitter_handle': '@ClimateCounts',
-    'facebook_url': 'http://www.facebook.com/pages/Climate-Counts/7698023321',
+    'url': 'http://climatecounts.org/',
 }
 
 PRODUCT_TYPES_URL = (
