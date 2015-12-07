@@ -29,18 +29,20 @@ from srs.scrape import scrape_soup
 
 # TODO: scrape this from the page
 CAMPAIGN = {
+    'author': 'Climate Counts',
     'campaign': 'Climate Counts Scorecard',
+    'contributors': ('Stonyfield Organic, University of New Hampshire,'
+                     ' Carbon Disclosure Project'),
+    'copyright': u'© 2006-2015 Climate Counts. All Rights Reserved.',
+    'date': '2015',
+    'donate_url': 'http://climatecounts.org/score_more.php',
+    'facebook_url': 'http://www.facebook.com/pages/Climate-Counts/7698023321',
     # Compacted version of "We help consumers use their choices & voices
     # to motivate the world's largest companies to operate more sustainably
     # and reduce their climate impact"
     'goal': "Reduce large companies' climate impact",
-    'url': 'http://climatecounts.org/',
-    'author': 'Climate Counts',
-    'contributors': 'Stonyfield Organic, University of New Hampshire',
-    'copyright': u'© 2006-2014 Climate Counts. All Rights Reserved.',
-    'donate_url': 'http://climatecounts.org/score_more.php',
     'twitter_handle': '@ClimateCounts',
-    'facebook_url': 'http://www.facebook.com/pages/Climate-Counts/7698023321',
+    'url': 'http://climatecounts.org/',
 }
 
 PRODUCT_TYPES_URL = (
@@ -57,6 +59,23 @@ DESCRIPTION_TO_JUDGMENT = {
     'Stuck': -1,
 }
 
+# Distilled from the company_score_statusblock image,
+DESCRIPTION_TO_EXPLANATION = {
+    'Stuck': 'not yet taking meaningful action',
+    'Starting': 'at an early stage',
+    'Striding': 'a very good choice',
+    'Soaring': 'demonstrating exceptional leadership',
+}
+
+# claims specific to particular grades
+GRADE_TO_CLAIMS = {
+    'NR': [
+        (-1,
+        'not transparent enough about carbon emissions to be properly rated'),
+    ],
+}
+
+
 MAX_SCORE = 100
 
 STATUS_PATH_RE = re.compile(r'.*score_(.*)\.gif$')
@@ -65,14 +84,31 @@ SUBSCORE_RE = re.compile(r'^\s*([^:]+):\s+(\d+)/(\d+) points')
 
 NO_SPLIT_CLAIM_RE = re.compile(r'.*\b(also|however)\b.*', re.I)
 
+# still more work to do here:
+#
+# missing capitalization: e.g. 'Cnn'
+# missing apostrophes: e.g. 'Arbys'
+# incorrect owner: e.g. 'Haagen-dazs' for Nestle
 BRAND_CORRECTIONS = {  # hilarious
+    'Bana Republic': 'Banana Republic',
     'Climfast': 'Slimfast',
+    'Clorix': 'Clorox',
     'Gatoraide': 'Gatorade',
+    'Hilshire Farms': 'Hillshire Farms',
     'Litpon': 'Lipton',
+    'Loreal Paris': "L'Oreal Paris",
     'Mountain Des': 'Mountain Dew',
-    'Wgeaties': 'Wheaties',
-    'Talko Bell': 'Taco Bell',
+    'Nind West': 'Nine West',
+    'Oriville Redenbacker': "Orville Redenbacher's",
+    'Pilsbury': 'Pillsbury',
     'Siemans': 'Siemens',
+    'Talko Bell': 'Taco Bell',
+    'Victoria Secret': "Victoria's Secret",
+    'Wendys': "Wendy's",
+    'Weson': 'Wesson',
+    'Wgeaties': 'Wheaties',
+    'Whinnie the Pooh': 'Winnie the Pooh',
+    'Youplait': 'Yoplait',
 }
 
 SMUNCHED_BRAND_CORRECTIONS = dict(
@@ -208,12 +244,21 @@ def scrape_company(url, known_brands):
     c = dict(company=company)
 
     # rating
-    score = int(soup.select('#company_score_score')[0].text.strip())
-    r = dict(company=company, score=score, max_score=MAX_SCORE)
-    status_path = soup.select('#company_score_status img')[0]['src']
-    r['description'], r['judgment'] = scrape_description_and_judgment(
-        status_path)
-    r['url'] = url
+    grade = soup.select('#company_score_score')[0].text.strip()
+    if grade[:1] in 'ABCDEFN':  # ignore numbers
+        r = dict(company=company, grade=grade)
+        status_path = soup.select('#company_score_status img')[0]['src']
+        r['description'], r['judgment'] = scrape_description_and_judgment(
+            status_path)
+        r['url'] = url
+
+        yield 'rating', r
+
+        for judgment, claim in GRADE_TO_CLAIMS.get(grade, []):
+            yield 'claim', dict(
+                company=company, judgment=judgment, claim=claim)
+
+
 
     # icon
     icon_as = soup.select('#company_score_company_icon a')
@@ -285,7 +330,9 @@ def scrape_company(url, known_brands):
         yield 'brand', dict(company=company, brand=brand, twitter_handle=th)
 
     yield 'company', c
-    yield 'rating', r
+
+    # skip parsing claims for now; they are two years out-of-date
+    return
 
     # parse claims
     for b in soup.find(id='company_score').parent.select('b'):
@@ -321,4 +368,7 @@ def scrape_company(url, known_brands):
 def scrape_description_and_judgment(status_path):
     desc = STATUS_PATH_RE.match(status_path).group(1)
     desc = desc[0].upper() + desc[1:]  # capitalize first letter
-    return desc, DESCRIPTION_TO_JUDGMENT[desc]
+
+    judgment = DESCRIPTION_TO_JUDGMENT[desc]
+    full_desc = u'{}: {}'.format(desc, DESCRIPTION_TO_EXPLANATION[desc])
+    return full_desc, judgment
