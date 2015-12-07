@@ -48,7 +48,7 @@ CAMPAIGN_CHANGED_SINCE = {
     'b_corp': datetime(2015, 4, 30),
     'bang_accord': datetime(2015, 4, 30),
     'climate_counts': datetime(2015, 4, 30),
-    'cotton_snapshot': datetime(2015, 9, 24),
+    'cotton_snapshot': datetime(2015, 12, 7),
     'free2work': datetime(2015, 10, 26),
     'greenpeace_electronics': datetime(2015, 4, 30),
     'hrc': datetime(2015, 10, 15),
