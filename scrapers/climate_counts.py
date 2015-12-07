@@ -57,6 +57,15 @@ DESCRIPTION_TO_JUDGMENT = {
     'Stuck': -1,
 }
 
+# Distilled from the company_score_statusblock image,
+DESCRIPTION_TO_EXPLANATION = {
+    'Stuck': 'not yet taking meaningful action',
+    'Starting': 'at an early stage',
+    'Striding': 'beginning to hit their stride',
+    'Soaring': 'demonstrating exceptional leadership',
+}
+
+
 MAX_SCORE = 100
 
 STATUS_PATH_RE = re.compile(r'.*score_(.*)\.gif$')
@@ -225,12 +234,17 @@ def scrape_company(url, known_brands):
     c = dict(company=company)
 
     # rating
-    score = int(soup.select('#company_score_score')[0].text.strip())
-    r = dict(company=company, score=score, max_score=MAX_SCORE)
-    status_path = soup.select('#company_score_status img')[0]['src']
-    r['description'], r['judgment'] = scrape_description_and_judgment(
-        status_path)
-    r['url'] = url
+    grade = soup.select('#company_score_score')[0].text.strip()
+    if grade[:1] in 'ABCDEFN':  # ignore numbers
+        r = dict(company=company, grade=grade)
+        status_path = soup.select('#company_score_status img')[0]['src']
+        r['description'], r['judgment'] = scrape_description_and_judgment(
+            status_path)
+        r['url'] = url
+
+        yield 'rating', r
+
+
 
     # icon
     icon_as = soup.select('#company_score_company_icon a')
@@ -302,7 +316,9 @@ def scrape_company(url, known_brands):
         yield 'brand', dict(company=company, brand=brand, twitter_handle=th)
 
     yield 'company', c
-    yield 'rating', r
+
+    # skip parsing claims for now; they are two years out-of-date
+    return
 
     # parse claims
     for b in soup.find(id='company_score').parent.select('b'):
@@ -338,4 +354,7 @@ def scrape_company(url, known_brands):
 def scrape_description_and_judgment(status_path):
     desc = STATUS_PATH_RE.match(status_path).group(1)
     desc = desc[0].upper() + desc[1:]  # capitalize first letter
-    return desc, DESCRIPTION_TO_JUDGMENT[desc]
+
+    judgment = DESCRIPTION_TO_JUDGMENT[desc]
+    full_desc = u'{}: {}'.format(desc, DESCRIPTION_TO_EXPLANATION[desc])
+    return full_desc, judgment
