@@ -71,7 +71,7 @@ DESCRIPTION_TO_EXPLANATION = {
 GRADE_TO_CLAIMS = {
     'NR': [
         (-1,
-        'not transparent enough about carbon emissions to be properly rated'),
+        'not transparent enough to receive a letter grade (NR = No Response)'),
     ],
 }
 
