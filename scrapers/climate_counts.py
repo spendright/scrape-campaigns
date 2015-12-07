@@ -65,6 +65,14 @@ DESCRIPTION_TO_EXPLANATION = {
     'Soaring': 'demonstrating exceptional leadership',
 }
 
+# claims specific to particular grades
+GRADE_TO_CLAIMS = {
+    'NR': [
+        (-1,
+        'not transparent enough about carbon emissions to be properly rated'),
+    ],
+}
+
 
 MAX_SCORE = 100
 
@@ -243,6 +251,10 @@ def scrape_company(url, known_brands):
         r['url'] = url
 
         yield 'rating', r
+
+        for judgment, claim in GRADE_TO_CLAIMS.get(grade, []):
+            yield 'claim', dict(
+                company=company, judgment=judgment, claim=claim)
 
 
 
