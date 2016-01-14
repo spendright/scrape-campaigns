@@ -53,7 +53,7 @@ CAMPAIGN_CHANGED_SINCE = {
     'greenpeace_electronics': datetime(2015, 4, 30),
     'hrc': datetime(2015, 10, 15),
     'mining_the_disclosures': datetime(2015, 9, 24),
-    'rankabrand': datetime(2015, 5, 23),
+    'rankabrand': datetime(2016, 1, 14),
     'wwf_palm_oil': datetime(2015, 4, 30),
 }
 
