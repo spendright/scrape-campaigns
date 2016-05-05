@@ -41,6 +41,7 @@ DISABLED_CAMPAIGNS = {
 CAMPAIGN_TO_SCRAPE_FREQ = {
     # give Climate Counts a chance to update their rating system
     'climate_counts': timedelta(days=80),
+    'detox_catwalk': timedelta(days=60),
     'rankabrand': timedelta(days=60),
 }
 
