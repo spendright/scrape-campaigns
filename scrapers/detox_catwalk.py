@@ -81,10 +81,14 @@ def scrape_campaign():
                 brand = BRAND_RE.match(brand).group('brand')
                 yield 'brand', dict(company=company, brand=brand)
 
-        # url (with fragment)
+        # would like to use the correct fragment for each rating
+        # (the rest of the url is the same), but the logic for that is
+        # buried deep in JS somewhere.
 
         ct = page.select('.ct-table')
 
+        # in theory, we'd get this from the class of the rating logo, but
+        # that's set by JS
         if ct:
             if ct[0].select('.negative'):
                 judgment = 0
