@@ -52,7 +52,7 @@ CAMPAIGN_CHANGED_SINCE = {
     'bang_accord': datetime(2015, 4, 30),
     'climate_counts': datetime(2015, 12, 8),
     'cotton_snapshot': datetime(2015, 12, 7),
-    'detox_catwalk': datetime(2016, 5, 6),
+    'detox_catwalk': datetime(2016, 5, 7),
     'free2work': datetime(2015, 10, 26),
     'greenpeace_electronics': datetime(2015, 4, 30),
     'hrc': datetime(2015, 10, 15),
