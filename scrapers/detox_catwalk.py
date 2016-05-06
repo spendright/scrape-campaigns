@@ -64,6 +64,8 @@ def scrape_campaign():
 
         for company in companies:
             yield 'company', dict(company=company)
+            yield 'category', dict(
+                company=company, category=CATEGORY)
 
         for b in page.select('b'):
             # look for "Brands Owned"
