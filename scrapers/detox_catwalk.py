@@ -48,7 +48,10 @@ log = logging.getLogger(__name__)
 
 
 def scrape_campaign():
+    log.info('scraping Detox Catwalk page')
     soup = scrape_soup(URL)
+
+    yield 'campaign', CAMPAIGN
 
     for page in soup.select('.page'):
 
