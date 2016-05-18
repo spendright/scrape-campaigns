@@ -102,8 +102,3 @@ def scrape_campaign():
         yield 'rating', dict(
             company=company, judgment=judgment,
             description=JUDGMENT_TO_DESCRIPTION[judgment])
-
-        if judgment == -1:
-            yield 'claim', dict(
-                company=company, judgment=-1,
-                claim='has not made a Detox commitment')
