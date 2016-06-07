@@ -164,8 +164,10 @@ def scrape_brand(url, sectors, soup=None):
     b['company'] = info_strs[i + 1]
 
     # logo URL
-    logo_img = soup.select('div.logobox img')[0]
-    b['logo_url'] = repair_url(urljoin(url, logo_img['src']))
+    logo_imgs = soup.select('div.logobox img')
+    if logo_imgs:
+        logo_img = logo_imgs[0]
+        b['logo_url'] = repair_url(urljoin(url, logo_img['src']))
 
     # category stuff
     sectors = correct_sectors(sectors)
